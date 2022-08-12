@@ -39,7 +39,7 @@ jobs:
               - 'tsconfig.json'
 
       - name: Build actions
-        if: steps.filter.outputs.actions == 'true' || github.event_name == 'workflow dispatch'
+        if: steps.filter.outputs.actions == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           npm ci
           npm run removeNPMAbsolutePaths
