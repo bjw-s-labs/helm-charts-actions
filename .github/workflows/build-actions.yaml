@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ steps.get-app-token.outputs.token }}
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Collect changes
@@ -46,10 +47,10 @@ jobs:
           npm run build
 
       - name: Commit Changes
-        uses: actions-x/commit@v6
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          name: "bjw-s-bot[bot]"
-          email: "bjw-s-bot <87358111+bjw-s-bot[bot]@users.noreply.github.com>"
-          files: "package-lock.json package.json node_modules lib"
-          message: "chore: Autobuild from ref: ${{ github.sha }}"
-          token: ${{ steps.get-app-token.outputs.token }}
+          commit_message: "chore: Autobuild from ref: ${{ github.sha }}"
+          file_pattern: "package-lock.json package.json node_modules/* lib/*"
+          commit_user_name: "bjw-s-bot[bot]"
+          commit_user_email: "87358111+bjw-s-bot[bot]@users.noreply.github.com"
+          commit_author: "bjw-s-bot <87358111+bjw-s-bot[bot]@users.noreply.github.com>"
