@@ -49,7 +49,7 @@ jobs:
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "chore: Autobuild from ref: ${{ github.sha }}"
+          commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
           file_pattern: "package-lock.json package.json node_modules/* lib/*"
           commit_user_name: "bjw-s-bot[bot]"
           commit_user_email: "87358111+bjw-s-bot[bot]@users.noreply.github.com"
