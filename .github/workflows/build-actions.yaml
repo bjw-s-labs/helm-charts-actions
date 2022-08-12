@@ -47,6 +47,6 @@ jobs:
         with:
           name: "bjw-s-bot[bot]"
           email: "bjw-s-bot <87358111+bjw-s-bot[bot]@users.noreply.github.com>"
-          files: "lib"
+          files: "package-lock.json package.json node_modules lib"
           message: "chore: Autobuild from ref: ${{ env.GITHUB_SHA }}"
           token: ${{ steps.get-app-token.outputs.token }}
