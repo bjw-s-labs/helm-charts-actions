@@ -137,76 +137,80 @@ async function run() {
       `Repo configuration: ${JSON.stringify(repoConfig, undefined, 2)}`
     );
 
+    let responseCharts: any;
     if (overrideCharts && overrideCharts !== "[]") {
-      const responseCharts = YAML.parse(overrideCharts);
-      core.info(`Charts: ${JSON.stringify(responseCharts, undefined, 2)}`);
-      core.setOutput("charts", responseCharts);
-      return;
-    }
-
-    const eventName = github.context.eventName;
-
-    let baseCommit: string;
-    let headCommit: string;
-
-    switch (eventName) {
-      case "pull_request":
-        baseCommit = github.context.payload.pull_request?.base?.sha;
-        headCommit = github.context.payload.pull_request?.head?.sha;
-        break;
-      case "push":
-        baseCommit = github.context.payload.before;
-        headCommit = github.context.payload.after;
-        break;
-      case "workflow_dispatch":
-        getAllCharts = "true";
-        baseCommit = "";
-        headCommit = github.context.sha;
-        break;
-      default:
-        throw new Error(
-          `This action only supports pull requests, pushes and workflow_dispatch,` +
-            `${github.context.eventName} events are not supported.`
-        );
-    }
-
-    let responseFiles: string[];
-    if (getAllCharts === "true") {
-      responseFiles = await requestAllFiles(headCommit, githubToken);
+      responseCharts = YAML.parse(overrideCharts);
     } else {
-      responseFiles = await requestAddedModifiedFiles(
-        baseCommit,
-        headCommit,
-        githubToken
-      );
+      const eventName = github.context.eventName;
+
+      let baseCommit: string;
+      let headCommit: string;
+
+      switch (eventName) {
+        case "pull_request":
+          baseCommit = github.context.payload.pull_request?.base?.sha;
+          headCommit = github.context.payload.pull_request?.head?.sha;
+          break;
+        case "push":
+          baseCommit = github.context.payload.before;
+          headCommit = github.context.payload.after;
+          break;
+        case "workflow_dispatch":
+          getAllCharts = "true";
+          baseCommit = "";
+          headCommit = github.context.sha;
+          break;
+        default:
+          throw new Error(
+            `This action only supports pull requests, pushes and workflow_dispatch,` +
+              `${github.context.eventName} events are not supported.`
+          );
+      }
+
+      let responseFiles: string[];
+      if (getAllCharts === "true") {
+        responseFiles = await requestAllFiles(headCommit, githubToken);
+      } else {
+        responseFiles = await requestAddedModifiedFiles(
+          baseCommit,
+          headCommit,
+          githubToken
+        );
+      }
+      responseCharts = filterChangedCharts(responseFiles, chartsFolder);
     }
 
-    const changedCharts = filterChangedCharts(responseFiles, chartsFolder);
-    const libraryCharts = changedCharts.filter(chart => {
-      const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`);
+    const libraryCharts = responseCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(
+        `${chartsFolder}/${chart}/Chart.yaml`
+      );
       return chartYaml.type === "library";
     });
-    const applicationCharts = changedCharts.filter(chart => {
-      const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`);
+    const applicationCharts = responseCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(
+        `${chartsFolder}/${chart}/Chart.yaml`
+      );
       return chartYaml.type !== "library";
     });
 
-    const chartsToInstall = changedCharts.filter(
-      (x) => !repoConfig["excluded-charts-install"].includes(x)
+    const chartsToInstall = responseCharts.filter(
+      (x: any) => !repoConfig["excluded-charts-install"].includes(x)
     );
-    const chartsToLint = changedCharts.filter(
-      (x) => !repoConfig["excluded-charts-lint"].includes(x)
+    const chartsToLint = responseCharts.filter(
+      (x: any) => !repoConfig["excluded-charts-lint"].includes(x)
     );
 
-    core.info(`Charts: ${JSON.stringify(changedCharts, undefined, 2)}`);
+    core.info(`Charts: ${JSON.stringify(responseCharts, undefined, 2)}`);
     core.info(`Library charts: ${JSON.stringify(libraryCharts, undefined, 2)}`);
-    core.info(`Application charts: ${JSON.stringify(applicationCharts, undefined, 2)}`);
+    core.info(
+      `Application charts: ${JSON.stringify(applicationCharts, undefined, 2)}`
+    );
     core.info(`Charts to lint: ${JSON.stringify(chartsToLint, undefined, 2)}`);
     core.info(
       `Charts to install: ${JSON.stringify(chartsToInstall, undefined, 2)}`
     );
 
-    core.setOutput("charts", changedCharts);
+    core.setOutput("charts", responseCharts);
     core.setOutput("chartsApplication", applicationCharts);
     core.setOutput("chartsLibrary", libraryCharts);
     core.setOutput("chartsToInstall", chartsToInstall);
