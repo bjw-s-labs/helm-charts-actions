@@ -184,11 +184,11 @@ async function run() {
     const changedCharts = filterChangedCharts(responseFiles, chartsFolder);
 
     const libraryCharts = changedCharts.filter((chart) => {
-      const chartYaml = getChartYamlFromFile(`${chart}/Chart.yaml`) as any;
+      const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`) as any;
       return (chartYaml.type || "application") === "library";
     });
     const applicationCharts = changedCharts.filter((chart) => {
-      const chartYaml = getChartYamlFromFile(`${chart}/Chart.yaml`) as any;
+      const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`) as any;
       return (chartYaml.type || "application") !== "library";
     });
 
