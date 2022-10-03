@@ -33,6 +33,12 @@ outputs:
   charts:
     description: >
       An array of all the Helm charts that contain changes
+  chartsLibrary:
+    description: >
+      An array of all the Helm Library charts that contain changes
+  chartsApplication:
+    description: >
+      An array of all the Helm Application charts that contain changes
   chartsToInstall:
     description: >
       An array of the charts that should be installed

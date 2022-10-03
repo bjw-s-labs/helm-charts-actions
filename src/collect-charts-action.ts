@@ -90,6 +90,11 @@ async function getRepoConfig(configPath: string) {
   return repoConfig;
 }
 
+async function getChartYamlFromFile(path: string): Promise<any> {
+  const chartYamlFile = await fs.readFile(path, "utf8");
+  return YAML.parse(chartYamlFile);
+}
+
 function filterChangedCharts(files: string[], parentFolder: string) {
   const filteredChartFiles = files.filter((file) => {
     const rel = path.relative(parentFolder, file);
@@ -177,6 +182,16 @@ async function run() {
     }
 
     const changedCharts = filterChangedCharts(responseFiles, chartsFolder);
+
+    const libraryCharts = changedCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(`${chart}/Chart.yaml`) as any;
+      return (chartYaml.type || "application") === "library";
+    });
+    const applicationCharts = changedCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(`${chart}/Chart.yaml`) as any;
+      return (chartYaml.type || "application") !== "library";
+    });
+
     const chartsToInstall = changedCharts.filter(
       (x) => !repoConfig["excluded-charts-install"].includes(x)
     );
@@ -185,12 +200,16 @@ async function run() {
     );
 
     core.info(`Charts: ${JSON.stringify(changedCharts, undefined, 2)}`);
+    core.info(`Library charts: ${JSON.stringify(libraryCharts, undefined, 2)}`);
+    core.info(`Application charts: ${JSON.stringify(applicationCharts, undefined, 2)}`);
     core.info(`Charts to lint: ${JSON.stringify(chartsToLint, undefined, 2)}`);
     core.info(
       `Charts to install: ${JSON.stringify(chartsToInstall, undefined, 2)}`
     );
 
     core.setOutput("charts", changedCharts);
+    core.setOutput("chartsApplication", applicationCharts);
+    core.setOutput("chartsLibrary", libraryCharts);
     core.setOutput("chartsToInstall", chartsToInstall);
     core.setOutput("chartsToLint", chartsToLint);
   } catch (error) {
@@ -202,7 +221,7 @@ async function runWrapper() {
   try {
     await run();
   } catch (error) {
-    core.setFailed(`verify-chart-version action failed: ${error}`);
+    core.setFailed(`collect-charts action failed: ${error}`);
     console.log(error);
   }
 }

@@ -91,7 +91,7 @@ async function run() {
       return;
     }
 
-    let originalChartYaml;
+    let originalChartYaml: any;
     let originalChartChangelog: string | undefined;
     try {
       originalChartYaml = await getChartYamlFromRepo(
