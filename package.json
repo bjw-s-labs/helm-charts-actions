@@ -23,7 +23,7 @@
     "yaml": "2.2.1"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.0",
+    "@types/fs-extra": "11.0.1",
     "@types/node": "18.11.18",
     "@types/semver": "7.3.13",
     "eslint": "8.31.0",
