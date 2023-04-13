@@ -1,34 +1,35 @@
-name: 'Collect charts'
-description: 'Collects Helm charts based on the inputs and returns the lint/test matrix'
+---
+name: "Collect charts"
+description: "Collects Helm charts based on the inputs and returns the lint/test matrix"
 inputs:
   token:
     description: >
       GitHub token for GitHub API requests.
     required: true
-    default: '${{ github.token }}'
+    default: "${{ github.token }}"
   chartsFolder:
     description: >
       Base folder containing all the charts
     required: true
-    default: 'charts'
+    default: "charts"
   repoConfigFile:
     description: >
       Path to the repo config file that contains which charts
-      should be excluded from linting/testing.
+      should be excluded from linting/testing/release.
     required: true
-    default: '.ci/repo-config.yaml'
+    default: ".ci/repo-config.yaml"
   getAllCharts:
     description: >
       Instead of finding the changed charts, return
       all the charts
     required: false
-    default: 'false'
+    default: "false"
   overrideCharts:
     description: >
       A JSON encoded array of charts to return instead of finding
       the changed charts
     required: false
-    default: '[]'
+    default: "[]"
 outputs:
   charts:
     description: >
@@ -46,5 +47,5 @@ outputs:
     description: >
       An array of the charts that should be linted
 runs:
-  using: 'node16'
-  main: '../lib/collect-charts-action.js'
+  using: "node16"
+  main: "../lib/collect-charts-action.js"
