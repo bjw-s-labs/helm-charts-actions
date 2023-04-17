@@ -33,12 +33,12 @@ async function requestAddedModifiedFiles(
     );
   }
 
-  // // Ensure that the head commit is ahead of the base commit.
-  // if (response.data.status !== "ahead") {
-  //   throw new Error(
-  //     `The head commit for this ${github.context.eventName} event is not ahead of the base commit.`
-  //   );
-  // }
+  // Ensure that the head commit is ahead of the base commit.
+  if (response.data.status !== "ahead") {
+    throw new Error(
+      `The head commit for this ${github.context.eventName} event is not ahead of the base commit.`
+    );
+  }
 
   const responseFiles = response.data.files || [];
   for (const file of responseFiles) {
@@ -180,22 +180,18 @@ async function run() {
       responseCharts = filterChangedCharts(responseFiles, chartsFolder);
     }
 
-    const libraryCharts = responseCharts
-      .filter((chart) => {
-        const chartYaml = getChartYamlFromFile(
-          `${chartsFolder}/${chart}/Chart.yaml`
-        );
-        return chartYaml.type === "library";
-      })
-      .filter((x: any) => !repoConfig["excluded-charts-release"].includes(x));
-    const applicationCharts = responseCharts
-      .filter((chart) => {
-        const chartYaml = getChartYamlFromFile(
-          `${chartsFolder}/${chart}/Chart.yaml`
-        );
-        return chartYaml.type !== "library";
-      })
-      .filter((x: any) => !repoConfig["excluded-charts-release"].includes(x));
+    const libraryCharts = responseCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(
+        `${chartsFolder}/${chart}/Chart.yaml`
+      );
+      return chartYaml.type === "library";
+    });
+    const applicationCharts = responseCharts.filter((chart) => {
+      const chartYaml = getChartYamlFromFile(
+        `${chartsFolder}/${chart}/Chart.yaml`
+      );
+      return chartYaml.type !== "library";
+    });
 
     const chartsToInstall = responseCharts.filter(
       (x: any) => !repoConfig["excluded-charts-install"].includes(x)
