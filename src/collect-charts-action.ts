@@ -7,10 +7,17 @@ import * as YAML from "yaml";
 
 type FileStatus = "added" | "modified" | "removed" | "renamed";
 
+interface repoConfig {
+  excluded_charts_install: string[];
+  excluded_charts_lint: string[];
+  excluded_charts_release: string[];
+}
+
 async function requestAddedModifiedFiles(
   baseCommit: string,
   headCommit: string,
-  githubToken: string
+  githubToken: string,
+  requireHeadAheadOfBase: boolean
 ) {
   const result: string[] = [];
   const octokit = github.getOctokit(githubToken);
@@ -34,7 +41,7 @@ async function requestAddedModifiedFiles(
   }
 
   // Ensure that the head commit is ahead of the base commit.
-  if (response.data.status !== "ahead") {
+  if (requireHeadAheadOfBase && response.data.status !== "ahead") {
     throw new Error(
       `The head commit for this ${github.context.eventName} event is not ahead of the base commit.`
     );
@@ -86,7 +93,23 @@ async function getRepoConfig(configPath: string) {
   }
 
   const repoConfigRaw = await fs.readFile(configPath, "utf8");
-  const repoConfig = await YAML.parse(repoConfigRaw);
+  const yamlConfig = await YAML.parse(repoConfigRaw);
+
+  let repoConfig: repoConfig;
+  if (yamlConfig) {
+    repoConfig = {
+      excluded_charts_install: yamlConfig["excluded-charts-install"] ?? [],
+      excluded_charts_lint: yamlConfig["excluded-charts-lint"] ?? [],
+      excluded_charts_release: yamlConfig["excluded-charts-release"] ?? [],
+    };
+  } else {
+    repoConfig = {
+      excluded_charts_install: [],
+      excluded_charts_lint: [],
+      excluded_charts_release: [],
+    };
+  }
+
   return repoConfig;
 }
 
@@ -117,15 +140,19 @@ function filterChangedCharts(files: string[], parentFolder: string) {
   }
 
   // Return only unique items
-  return changedCharts.filter(
+  var result = changedCharts.filter(
     (item, index) => changedCharts.indexOf(item) === index
   );
+  return result;
 }
 
 async function run() {
   try {
     const githubToken = core.getInput("token", { required: true });
     const chartsFolder = core.getInput("chartsFolder", { required: true });
+    const requireHeadAheadOfBase = core.getInput("requireHeadAheadOfBase", {
+      required: false,
+    });
     const repoConfigFilePath = core.getInput("repoConfigFile", {
       required: true,
     });
@@ -138,6 +165,7 @@ async function run() {
     );
 
     let responseCharts: any;
+
     if (overrideCharts && overrideCharts !== "[]") {
       responseCharts = YAML.parse(overrideCharts);
     } else {
@@ -167,6 +195,10 @@ async function run() {
           );
       }
 
+      if (!headCommit) {
+        throw new Error(`No HEAD commit was found to compare to.`);
+      }
+
       let responseFiles: string[];
       if (getAllCharts === "true") {
         responseFiles = await requestAllFiles(headCommit, githubToken);
@@ -174,47 +206,80 @@ async function run() {
         responseFiles = await requestAddedModifiedFiles(
           baseCommit,
           headCommit,
-          githubToken
+          githubToken,
+          requireHeadAheadOfBase === "true"
         );
       }
       responseCharts = filterChangedCharts(responseFiles, chartsFolder);
     }
 
-    const libraryCharts = responseCharts.filter((chart) => {
+    // Determine changed charts
+    core.info(`Charts: ${JSON.stringify(responseCharts, undefined, 2)}`);
+    core.setOutput("charts", responseCharts);
+
+    // Determine changed Library charts
+    const libraryCharts = responseCharts.filter((chart: any) => {
       const chartYaml = getChartYamlFromFile(
         `${chartsFolder}/${chart}/Chart.yaml`
       );
       return chartYaml.type === "library";
     });
-    const applicationCharts = responseCharts.filter((chart) => {
+    core.info(`Library charts: ${JSON.stringify(libraryCharts, undefined, 2)}`);
+    core.setOutput("chartsLibrary", libraryCharts);
+
+    // Determine changed Application charts
+    const applicationCharts = responseCharts.filter((chart: any) => {
       const chartYaml = getChartYamlFromFile(
         `${chartsFolder}/${chart}/Chart.yaml`
       );
       return chartYaml.type !== "library";
     });
-
-    const chartsToInstall = responseCharts.filter(
-      (x: any) => !repoConfig["excluded-charts-install"].includes(x)
-    );
-    const chartsToLint = responseCharts.filter(
-      (x: any) => !repoConfig["excluded-charts-lint"].includes(x)
-    );
-
-    core.info(`Charts: ${JSON.stringify(responseCharts, undefined, 2)}`);
-    core.info(`Library charts: ${JSON.stringify(libraryCharts, undefined, 2)}`);
     core.info(
       `Application charts: ${JSON.stringify(applicationCharts, undefined, 2)}`
     );
-    core.info(`Charts to lint: ${JSON.stringify(chartsToLint, undefined, 2)}`);
+    core.setOutput("chartsApplication", applicationCharts);
+
+    // Determine charts to install
+    const chartsToInstall = responseCharts.filter(
+      (x: string) => !repoConfig.excluded_charts_install.includes(x)
+    );
     core.info(
       `Charts to install: ${JSON.stringify(chartsToInstall, undefined, 2)}`
     );
-
-    core.setOutput("charts", responseCharts);
-    core.setOutput("chartsApplication", applicationCharts);
-    core.setOutput("chartsLibrary", libraryCharts);
     core.setOutput("chartsToInstall", chartsToInstall);
+
+    // Determine charts to lint
+    const chartsToLint = responseCharts.filter(
+      (x: string) => !repoConfig.excluded_charts_lint.includes(x)
+    );
+    core.info(`Charts to lint: ${JSON.stringify(chartsToLint, undefined, 2)}`);
     core.setOutput("chartsToLint", chartsToLint);
+
+    // Determine Library charts to release
+    const libraryChartsToRelease = libraryCharts.filter(
+      (x: string) => !repoConfig.excluded_charts_release.includes(x)
+    );
+    core.info(
+      `Library charts to release: ${JSON.stringify(
+        libraryChartsToRelease,
+        undefined,
+        2
+      )}`
+    );
+    core.setOutput("chartsLibraryToRelease", libraryChartsToRelease);
+
+    // Determine Application charts to release
+    const applicationChartsToRelease = applicationCharts.filter(
+      (x: string) => !repoConfig.excluded_charts_release.includes(x)
+    );
+    core.info(
+      `Application charts to release: ${JSON.stringify(
+        applicationChartsToRelease,
+        undefined,
+        2
+      )}`
+    );
+    core.setOutput("chartsApplicationToRelease", applicationChartsToRelease);
   } catch (error) {
     core.setFailed(String(error));
   }
