@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.2",
-    "@types/node": "18.17.19",
+    "@types/node": "18.18.0",
     "@types/semver": "7.5.3",
     "removeNPMAbsolutePaths": "3.0.1",
     "typescript": "5.2.2"
