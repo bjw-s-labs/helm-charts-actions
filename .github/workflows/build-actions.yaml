@@ -47,7 +47,7 @@ jobs:
           npm run build
 
       - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
           file_pattern: "package-lock.json package.json node_modules/* lib/*"
