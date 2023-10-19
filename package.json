@@ -21,7 +21,7 @@
     "yaml": "2.3.3"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.2",
+    "@types/fs-extra": "11.0.3",
     "@types/node": "18.18.6",
     "@types/semver": "7.5.3",
     "removeNPMAbsolutePaths": "3.0.1",
