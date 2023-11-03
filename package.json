@@ -18,7 +18,7 @@
     "fs-extra": "11.1.1",
     "json-schema-to-ts": "2.9.2",
     "semver": "7.5.4",
-    "yaml": "2.3.3"
+    "yaml": "2.3.4"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.3",
