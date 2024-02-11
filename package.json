@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.11.17",
-    "@types/semver": "7.5.6",
+    "@types/semver": "7.5.7",
     "removeNPMAbsolutePaths": "3.0.1",
     "typescript": "5.3.3"
   }
