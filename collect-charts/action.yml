@@ -58,5 +58,5 @@ outputs:
     description: >
       An array of the Application charts that should be released
 runs:
-  using: "node16"
+  using: "node20"
   main: "../lib/collect-charts-action.js"
