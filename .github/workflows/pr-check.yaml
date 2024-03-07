@@ -7,8 +7,6 @@ on:
     branches:
       - main
   pull_request:
-    # Run checks on reopened draft PRs to support triggering PR checks on draft PRs that were opened
-    # by other workflows.
     types:
       - opened
       - synchronize
@@ -21,11 +19,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Get GitHub API token
+        id: get-app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BJWS_APP_ID }}
+          private-key: ${{ secrets.BJWS_APP_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Check node modules up to date
+        id: checkModules
         run: .github/workflows/scripts/check-node-modules.sh
+
+      - name: Set PR label if modules need updating
+        if: always() && (steps.checkModules.outcome == 'failure')
+        env:
+          GITHUB_TOKEN: "${{ steps.get-app-token.outputs.token }}"
+          REPOSITORY: "${{ github.repository }}"
+          PR_NUMBER: "${{ github.event.pull_request.number }}"
+        run: |-
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/$REPOSITORY/issues/$PR_NUMBER/labels \
+            -f "labels[]=ci/update-deps"
 
   check-node-version:
     if: ${{ github.event.pull_request }}
@@ -46,3 +68,25 @@ jobs:
             exit 1
           fi
           echo "node_version=${NODE_VERSION}" >> $GITHUB_OUTPUT
+
+  build-actions:
+    if: ${{ github.event.pull_request }}
+    name: Verify actions build correctly
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Build actions
+        run: |
+          npm ci
+          npm run removeNPMAbsolutePaths
+          npm run build
