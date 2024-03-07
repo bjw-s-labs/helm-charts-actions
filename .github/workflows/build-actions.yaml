@@ -1,4 +1,4 @@
-name: "Actions: Build"
+name: "Build all Actions"
 
 concurrency: build-actions
 
@@ -35,19 +35,7 @@ jobs:
           node-version-file: .node-version
           cache: npm
 
-      - name: Collect changes
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            actions:
-              - 'src/**'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'tsconfig.json'
-
       - name: Build actions
-        if: steps.filter.outputs.actions == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           npm ci
           npm run removeNPMAbsolutePaths
