@@ -58,6 +58,6 @@ jobs:
         with:
           commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
           file_pattern: "package-lock.json package.json node_modules/* lib/*"
-          commit_user_name: "bjw-s-bot[bot]"
-          commit_user_email: "87358111+bjw-s-bot[bot]@users.noreply.github.com"
-          commit_author: "bjw-s-bot <87358111+bjw-s-bot[bot]@users.noreply.github.com>"
+          commit_user_name: "repo-duster[bot]"
+          commit_user_email: "87358111+repo-duster[bot]@users.noreply.github.com"
+          commit_author: "repo-duster[bot] <87358111+repo-duster[bot]@users.noreply.github.com>"
