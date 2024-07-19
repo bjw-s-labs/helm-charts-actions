@@ -24,7 +24,7 @@
     "ajv-formats": "3.0.1",
     "fs-extra": "11.2.0",
     "json-schema-to-ts": "3.1.0",
-    "semver": "7.6.2",
+    "semver": "7.6.3",
     "yaml": "2.4.5"
   },
   "devDependencies": {
