@@ -17,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'ci/update-deps')
     steps:
-      - name: Get GitHub API token
-        id: get-app-token
+      - name: Generate Token
+        id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.BJWS_APP_ID }}
-          private-key: ${{ secrets.BJWS_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.LAB_ASSISTANT_APP_ID }}
+          private-key: ${{ secrets.LAB_ASSISTANT_APP_KEY }}
 
       - name: Remove PR label
         env:
-          GITHUB_TOKEN: "${{ steps.get-app-token.outputs.token }}"
+          GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
           REPOSITORY: "${{ github.repository }}"
           PR_NUMBER: "${{ github.event.pull_request.number }}"
         run: |-
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.get-app-token.outputs.token }}
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
@@ -52,6 +52,6 @@ jobs:
         with:
           commit_message: "feat: Update checked-in dependencies"
           file_pattern: "node_modules/*"
-          commit_user_name: "repo-duster[bot]"
-          commit_user_email: "87358111+repo-duster[bot]@users.noreply.github.com"
-          commit_author: "repo-duster[bot] <87358111+repo-duster[bot]@users.noreply.github.com>"
+          commit_user_name: "${{ vars.LAB_ASSISTANT_USERNAME }}"
+          commit_user_email: "${{ vars.LAB_ASSISTANT_EMAIL }}"
+          commit_author: "${{ vars.LAB_ASSISTANT_USERNAME }} <${{ vars.LAB_ASSISTANT_EMAIL }}>"

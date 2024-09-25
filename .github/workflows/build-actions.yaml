@@ -14,17 +14,17 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ github.repository == 'bjw-s/helm-charts-actions' }}
     steps:
-      - name: Get GitHub API token
-        id: get-app-token
+      - name: Generate Token
+        id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.BJWS_APP_ID }}
-          private-key: ${{ secrets.BJWS_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.LAB_ASSISTANT_APP_ID }}
+          private-key: ${{ secrets.LAB_ASSISTANT_APP_KEY }}
 
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.get-app-token.outputs.token }}
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
@@ -46,6 +46,6 @@ jobs:
         with:
           commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
           file_pattern: "package-lock.json package.json node_modules/* lib/*"
-          commit_user_name: "repo-duster[bot]"
-          commit_user_email: "87358111+repo-duster[bot]@users.noreply.github.com"
-          commit_author: "repo-duster[bot] <87358111+repo-duster[bot]@users.noreply.github.com>"
+          commit_user_name: "${{ vars.LAB_ASSISTANT_USERNAME }}"
+          commit_user_email: "${{ vars.LAB_ASSISTANT_EMAIL }}"
+          commit_author: "${{ vars.LAB_ASSISTANT_USERNAME }} <${{ vars.LAB_ASSISTANT_EMAIL }}>"
