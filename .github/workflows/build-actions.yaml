@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Build all actions
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: ${{ github.repository == 'bjw-s/helm-charts-actions' }}
     steps:
       - name: Generate Token
