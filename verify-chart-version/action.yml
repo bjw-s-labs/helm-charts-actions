@@ -13,4 +13,4 @@ inputs:
     required: true
 runs:
   using: "node20"
-  main: "../lib/verify-chart-version-action.js"
+  main: "../dist/verify-chart-version-action.js"

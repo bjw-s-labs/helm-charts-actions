@@ -9,4 +9,4 @@ inputs:
     required: true
 runs:
   using: "node20"
-  main: "../lib/dereference-json-schema.js"
+  main: "../dist/dereference-json-schema.js"
