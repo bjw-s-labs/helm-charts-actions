@@ -59,4 +59,4 @@ outputs:
       An array of the Application charts that should be released
 runs:
   using: "node20"
-  main: "../lib/collect-charts-action.js"
+  main: "../dist/collect-charts-action.js"

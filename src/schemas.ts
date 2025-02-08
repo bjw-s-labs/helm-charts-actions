@@ -31,7 +31,7 @@ export const changelogEntrySchema = {
       pattern: "^https?://",
     },
   },
-} as const;
+};
 
 export function validateAgainstJsonSchema(
   object: any,
