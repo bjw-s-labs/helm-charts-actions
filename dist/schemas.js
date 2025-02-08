@@ -23,7 +23,7 @@ function requireCode$1 () {
 	hasRequiredCode$1 = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.regexpCode = exports.getEsmExportName = exports.getProperty = exports.safeStringify = exports.stringify = exports.strConcat = exports.addCodeArg = exports.str = exports._ = exports.nil = exports._Code = exports.Name = exports.IDENTIFIER = exports._CodeOrName = void 0;
+		exports.regexpCode = exports.getEsmExportName = exports.getProperty = exports.safeStringify = exports.stringify = exports.strConcat = exports.addCodeArg = exports.str = exports._ = exports.nil = exports._Code = exports.Name = exports.IDENTIFIER = exports._CodeOrName = undefined;
 		// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 		class _CodeOrName {
 		}
@@ -63,11 +63,11 @@ function requireCode$1 () {
 		    }
 		    get str() {
 		        var _a;
-		        return ((_a = this._str) !== null && _a !== void 0 ? _a : (this._str = this._items.reduce((s, c) => `${s}${c}`, "")));
+		        return ((_a = this._str) !== null && _a !== undefined ? _a : (this._str = this._items.reduce((s, c) => `${s}${c}`, "")));
 		    }
 		    get names() {
 		        var _a;
-		        return ((_a = this._names) !== null && _a !== void 0 ? _a : (this._names = this._items.reduce((names, c) => {
+		        return ((_a = this._names) !== null && _a !== undefined ? _a : (this._names = this._items.reduce((names, c) => {
 		            if (c instanceof Name)
 		                names[c.str] = (names[c.str] || 0) + 1;
 		            return names;
@@ -190,7 +190,7 @@ function requireScope () {
 	hasRequiredScope = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.ValueScope = exports.ValueScopeName = exports.Scope = exports.varKinds = exports.UsedValueState = void 0;
+		exports.ValueScope = exports.ValueScopeName = exports.Scope = exports.varKinds = exports.UsedValueState = undefined;
 		const code_1 = requireCode$1();
 		class ValueError extends Error {
 		    constructor(name) {
@@ -226,7 +226,7 @@ function requireScope () {
 		    }
 		    _nameGroup(prefix) {
 		        var _a, _b;
-		        if (((_b = (_a = this._parent) === null || _a === void 0 ? void 0 : _a._prefixes) === null || _b === void 0 ? void 0 : _b.has(prefix)) || (this._prefixes && !this._prefixes.has(prefix))) {
+		        if (((_b = (_a = this._parent) === null || _a === undefined ? undefined : _a._prefixes) === null || _b === undefined ? undefined : _b.has(prefix)) || (this._prefixes && !this._prefixes.has(prefix))) {
 		            throw new Error(`CodeGen: prefix "${prefix}" is not allowed in this scope`);
 		        }
 		        return (this._names[prefix] = { prefix, index: 0 });
@@ -264,7 +264,7 @@ function requireScope () {
 		            throw new Error("CodeGen: ref must be passed in value");
 		        const name = this.toName(nameOrPrefix);
 		        const { prefix } = name;
-		        const valueKey = (_a = value.key) !== null && _a !== void 0 ? _a : value.ref;
+		        const valueKey = (_a = value.key) !== null && _a !== undefined ? _a : value.ref;
 		        let vs = this._values[prefix];
 		        if (vs) {
 		            const _name = vs.get(valueKey);
@@ -317,7 +317,7 @@ function requireScope () {
 		                    const def = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
 		                    code = (0, code_1._) `${code}${def} ${name} = ${c};${this.opts._n}`;
 		                }
-		                else if ((c = getCode === null || getCode === void 0 ? void 0 : getCode(name))) {
+		                else if ((c = getCode === null || getCode === undefined ? undefined : getCode(name))) {
 		                    code = (0, code_1._) `${code}${c}${this.opts._n}`;
 		                }
 		                else {
@@ -342,7 +342,7 @@ function requireCodegen () {
 	hasRequiredCodegen = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.or = exports.and = exports.not = exports.CodeGen = exports.operators = exports.varKinds = exports.ValueScopeName = exports.ValueScope = exports.Scope = exports.Name = exports.regexpCode = exports.stringify = exports.getProperty = exports.nil = exports.strConcat = exports.str = exports._ = void 0;
+		exports.or = exports.and = exports.not = exports.CodeGen = exports.operators = exports.varKinds = exports.ValueScopeName = exports.ValueScope = exports.Scope = exports.Name = exports.regexpCode = exports.stringify = exports.getProperty = exports.nil = exports.strConcat = exports.str = exports._ = undefined;
 		const code_1 = requireCode$1();
 		const scope_1 = requireScope();
 		var code_2 = requireCode$1();
@@ -567,7 +567,7 @@ function requireCodegen () {
 		    }
 		    optimizeNames(names, constants) {
 		        var _a;
-		        this.else = (_a = this.else) === null || _a === void 0 ? void 0 : _a.optimizeNames(names, constants);
+		        this.else = (_a = this.else) === null || _a === undefined ? undefined : _a.optimizeNames(names, constants);
 		        if (!(super.optimizeNames(names, constants) || this.else))
 		            return;
 		        this.condition = optimizeExpr(this.condition, names, constants);
@@ -673,15 +673,15 @@ function requireCodegen () {
 		    optimizeNodes() {
 		        var _a, _b;
 		        super.optimizeNodes();
-		        (_a = this.catch) === null || _a === void 0 ? void 0 : _a.optimizeNodes();
-		        (_b = this.finally) === null || _b === void 0 ? void 0 : _b.optimizeNodes();
+		        (_a = this.catch) === null || _a === undefined ? undefined : _a.optimizeNodes();
+		        (_b = this.finally) === null || _b === undefined ? undefined : _b.optimizeNodes();
 		        return this;
 		    }
 		    optimizeNames(names, constants) {
 		        var _a, _b;
 		        super.optimizeNames(names, constants);
-		        (_a = this.catch) === null || _a === void 0 ? void 0 : _a.optimizeNames(names, constants);
-		        (_b = this.finally) === null || _b === void 0 ? void 0 : _b.optimizeNames(names, constants);
+		        (_a = this.catch) === null || _a === undefined ? undefined : _a.optimizeNames(names, constants);
+		        (_b = this.finally) === null || _b === undefined ? undefined : _b.optimizeNames(names, constants);
 		        return this;
 		    }
 		    get names() {
@@ -1049,7 +1049,7 @@ function requireUtil () {
 	if (hasRequiredUtil) return util;
 	hasRequiredUtil = 1;
 	Object.defineProperty(util, "__esModule", { value: true });
-	util.checkStrictMode = util.getErrorPath = util.Type = util.useFunc = util.setEvaluated = util.evaluatedPropsToName = util.mergeEvaluated = util.eachItem = util.unescapeJsonPointer = util.escapeJsonPointer = util.escapeFragment = util.unescapeFragment = util.schemaRefOrVal = util.schemaHasRulesButRef = util.schemaHasRules = util.checkUnknownRules = util.alwaysValidSchema = util.toHash = void 0;
+	util.checkStrictMode = util.getErrorPath = util.Type = util.useFunc = util.setEvaluated = util.evaluatedPropsToName = util.mergeEvaluated = util.eachItem = util.unescapeJsonPointer = util.escapeJsonPointer = util.escapeFragment = util.unescapeFragment = util.schemaRefOrVal = util.schemaHasRulesButRef = util.schemaHasRules = util.checkUnknownRules = util.alwaysValidSchema = util.toHash = undefined;
 	const codegen_1 = requireCodegen();
 	const code_1 = requireCode$1();
 	// TODO refactor to use Set
@@ -1272,7 +1272,7 @@ function requireErrors () {
 	hasRequiredErrors = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.extendErrors = exports.resetErrorsCount = exports.reportExtraError = exports.reportError = exports.keyword$DataError = exports.keywordError = void 0;
+		exports.extendErrors = exports.resetErrorsCount = exports.reportExtraError = exports.reportError = exports.keyword$DataError = exports.keywordError = undefined;
 		const codegen_1 = requireCodegen();
 		const util_1 = requireUtil();
 		const names_1 = requireNames();
@@ -1288,7 +1288,7 @@ function requireErrors () {
 		    const { it } = cxt;
 		    const { gen, compositeRule, allErrors } = it;
 		    const errObj = errorObjectCode(cxt, error, errorPaths);
-		    if (overrideAllErrors !== null && overrideAllErrors !== void 0 ? overrideAllErrors : (compositeRule || allErrors)) {
+		    if (overrideAllErrors !== null && overrideAllErrors !== undefined ? overrideAllErrors : (compositeRule || allErrors)) {
 		        addError(gen, errObj);
 		    }
 		    else {
@@ -1403,7 +1403,7 @@ function requireBoolSchema () {
 	if (hasRequiredBoolSchema) return boolSchema;
 	hasRequiredBoolSchema = 1;
 	Object.defineProperty(boolSchema, "__esModule", { value: true });
-	boolSchema.boolOrEmptySchema = boolSchema.topBoolOrEmptySchema = void 0;
+	boolSchema.boolOrEmptySchema = boolSchema.topBoolOrEmptySchema = undefined;
 	const errors_1 = requireErrors();
 	const codegen_1 = requireCodegen();
 	const names_1 = requireNames();
@@ -1464,7 +1464,7 @@ function requireRules () {
 	if (hasRequiredRules) return rules;
 	hasRequiredRules = 1;
 	Object.defineProperty(rules, "__esModule", { value: true });
-	rules.getRules = rules.isJSONType = void 0;
+	rules.getRules = rules.isJSONType = undefined;
 	const _jsonTypes = ["string", "number", "integer", "boolean", "null", "object", "array"];
 	const jsonTypes = new Set(_jsonTypes);
 	function isJSONType(x) {
@@ -1499,7 +1499,7 @@ function requireApplicability () {
 	if (hasRequiredApplicability) return applicability;
 	hasRequiredApplicability = 1;
 	Object.defineProperty(applicability, "__esModule", { value: true });
-	applicability.shouldUseRule = applicability.shouldUseGroup = applicability.schemaHasRulesForType = void 0;
+	applicability.shouldUseRule = applicability.shouldUseGroup = applicability.schemaHasRulesForType = undefined;
 	function schemaHasRulesForType({ schema, self }, type) {
 	    const group = self.RULES.types[type];
 	    return group && group !== true && shouldUseGroup(schema, group);
@@ -1512,7 +1512,7 @@ function requireApplicability () {
 	function shouldUseRule(schema, rule) {
 	    var _a;
 	    return (schema[rule.keyword] !== undefined ||
-	        ((_a = rule.definition.implements) === null || _a === void 0 ? void 0 : _a.some((kwd) => schema[kwd] !== undefined)));
+	        ((_a = rule.definition.implements) === null || _a === undefined ? undefined : _a.some((kwd) => schema[kwd] !== undefined)));
 	}
 	applicability.shouldUseRule = shouldUseRule;
 	
@@ -1525,7 +1525,7 @@ function requireDataType () {
 	if (hasRequiredDataType) return dataType;
 	hasRequiredDataType = 1;
 	Object.defineProperty(dataType, "__esModule", { value: true });
-	dataType.reportTypeError = dataType.checkDataTypes = dataType.checkDataType = dataType.coerceAndCheckDataType = dataType.getJSONTypes = dataType.getSchemaTypes = dataType.DataType = void 0;
+	dataType.reportTypeError = dataType.checkDataTypes = dataType.checkDataType = dataType.coerceAndCheckDataType = dataType.getJSONTypes = dataType.getSchemaTypes = dataType.DataType = undefined;
 	const rules_1 = requireRules();
 	const applicability_1 = requireApplicability();
 	const errors_1 = requireErrors();
@@ -1737,7 +1737,7 @@ function requireDefaults () {
 	if (hasRequiredDefaults) return defaults;
 	hasRequiredDefaults = 1;
 	Object.defineProperty(defaults, "__esModule", { value: true });
-	defaults.assignDefaults = void 0;
+	defaults.assignDefaults = undefined;
 	const codegen_1 = requireCodegen();
 	const util_1 = requireUtil();
 	function assignDefaults(it, ty) {
@@ -1783,7 +1783,7 @@ function requireCode () {
 	if (hasRequiredCode) return code;
 	hasRequiredCode = 1;
 	Object.defineProperty(code, "__esModule", { value: true });
-	code.validateUnion = code.validateArray = code.usePattern = code.callValidateCode = code.schemaProperties = code.allSchemaProperties = code.noPropertyInData = code.propertyInData = code.isOwnProperty = code.hasPropFunc = code.reportMissingProp = code.checkMissingProp = code.checkReportMissingProp = void 0;
+	code.validateUnion = code.validateArray = code.usePattern = code.callValidateCode = code.schemaProperties = code.allSchemaProperties = code.noPropertyInData = code.propertyInData = code.isOwnProperty = code.hasPropFunc = code.reportMissingProp = code.checkMissingProp = code.checkReportMissingProp = undefined;
 	const codegen_1 = requireCodegen();
 	const util_1 = requireUtil();
 	const names_1 = requireNames();
@@ -1921,7 +1921,7 @@ function requireKeyword () {
 	if (hasRequiredKeyword) return keyword;
 	hasRequiredKeyword = 1;
 	Object.defineProperty(keyword, "__esModule", { value: true });
-	keyword.validateKeywordUsage = keyword.validSchemaType = keyword.funcKeywordCode = keyword.macroKeywordCode = void 0;
+	keyword.validateKeywordUsage = keyword.validSchemaType = keyword.funcKeywordCode = keyword.macroKeywordCode = undefined;
 	const codegen_1 = requireCodegen();
 	const names_1 = requireNames();
 	const code_1 = requireCode();
@@ -1951,7 +1951,7 @@ function requireKeyword () {
 	    const validateRef = useKeyword(gen, keyword, validate);
 	    const valid = gen.let("valid");
 	    cxt.block$data(valid, validateKeyword);
-	    cxt.ok((_a = def.valid) !== null && _a !== void 0 ? _a : valid);
+	    cxt.ok((_a = def.valid) !== null && _a !== undefined ? _a : valid);
 	    function validateKeyword() {
 	        if (def.errors === false) {
 	            assignValid();
@@ -1984,7 +1984,7 @@ function requireKeyword () {
 	    }
 	    function reportErrs(errors) {
 	        var _a;
-	        gen.if((0, codegen_1.not)((_a = def.valid) !== null && _a !== void 0 ? _a : valid), errors);
+	        gen.if((0, codegen_1.not)((_a = def.valid) !== null && _a !== undefined ? _a : valid), errors);
 	    }
 	}
 	keyword.funcKeywordCode = funcKeywordCode;
@@ -2026,7 +2026,7 @@ function requireKeyword () {
 	        throw new Error("ajv implementation error");
 	    }
 	    const deps = def.dependencies;
-	    if (deps === null || deps === void 0 ? void 0 : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema, kwd))) {
+	    if (deps === null || deps === undefined ? undefined : deps.some((kwd) => !Object.prototype.hasOwnProperty.call(schema, kwd))) {
 	        throw new Error(`parent schema must have dependencies of ${keyword}: ${deps.join(",")}`);
 	    }
 	    if (def.validateSchema) {
@@ -2054,7 +2054,7 @@ function requireSubschema () {
 	if (hasRequiredSubschema) return subschema;
 	hasRequiredSubschema = 1;
 	Object.defineProperty(subschema, "__esModule", { value: true });
-	subschema.extendSubschemaMode = subschema.extendSubschemaData = subschema.getSubschema = void 0;
+	subschema.extendSubschemaMode = subschema.extendSubschemaData = subschema.getSubschema = undefined;
 	const codegen_1 = requireCodegen();
 	const util_1 = requireUtil();
 	function getSubschema(it, { keyword, schemaProp, schema, schemaPath, errSchemaPath, topSchemaRef }) {
@@ -2300,7 +2300,7 @@ function requireResolve () {
 	if (hasRequiredResolve) return resolve;
 	hasRequiredResolve = 1;
 	Object.defineProperty(resolve, "__esModule", { value: true });
-	resolve.getSchemaRefs = resolve.resolveUrl = resolve.normalizeId = resolve._getFullPath = resolve.getFullPath = resolve.inlineRef = void 0;
+	resolve.getSchemaRefs = resolve.resolveUrl = resolve.normalizeId = resolve._getFullPath = resolve.getFullPath = resolve.inlineRef = undefined;
 	const util_1 = requireUtil();
 	const equal = requireFastDeepEqual();
 	const traverse = requireJsonSchemaTraverse();
@@ -2462,7 +2462,7 @@ function requireValidate () {
 	if (hasRequiredValidate) return validate;
 	hasRequiredValidate = 1;
 	Object.defineProperty(validate, "__esModule", { value: true });
-	validate.getData = validate.KeywordCxt = validate.validateFunctionCode = void 0;
+	validate.getData = validate.KeywordCxt = validate.validateFunctionCode = undefined;
 	const boolSchema_1 = requireBoolSchema();
 	const dataType_1 = requireDataType();
 	const applicability_1 = requireApplicability();
@@ -3031,7 +3031,7 @@ function requireCompile () {
 	if (hasRequiredCompile) return compile;
 	hasRequiredCompile = 1;
 	Object.defineProperty(compile, "__esModule", { value: true });
-	compile.resolveSchema = compile.getCompilingSchema = compile.resolveRef = compile.compileSchema = compile.SchemaEnv = void 0;
+	compile.resolveSchema = compile.getCompilingSchema = compile.resolveRef = compile.compileSchema = compile.SchemaEnv = undefined;
 	const codegen_1 = requireCodegen();
 	const validation_error_1 = requireValidation_error();
 	const names_1 = requireNames();
@@ -3049,11 +3049,11 @@ function requireCompile () {
 	        this.schema = env.schema;
 	        this.schemaId = env.schemaId;
 	        this.root = env.root || this;
-	        this.baseId = (_a = env.baseId) !== null && _a !== void 0 ? _a : (0, resolve_1.normalizeId)(schema === null || schema === void 0 ? void 0 : schema[env.schemaId || "$id"]);
+	        this.baseId = (_a = env.baseId) !== null && _a !== undefined ? _a : (0, resolve_1.normalizeId)(schema === null || schema === undefined ? undefined : schema[env.schemaId || "$id"]);
 	        this.schemaPath = env.schemaPath;
 	        this.localRefs = env.localRefs;
 	        this.meta = env.meta;
-	        this.$async = schema === null || schema === void 0 ? void 0 : schema.$async;
+	        this.$async = schema === null || schema === undefined ? undefined : schema.$async;
 	        this.refs = {};
 	    }
 	}
@@ -3163,7 +3163,7 @@ function requireCompile () {
 	        return schOrFunc;
 	    let _sch = resolve.call(this, root, ref);
 	    if (_sch === undefined) {
-	        const schema = (_a = root.localRefs) === null || _a === void 0 ? void 0 : _a[ref]; // TODO maybe localRefs should hold SchemaEnv
+	        const schema = (_a = root.localRefs) === null || _a === undefined ? undefined : _a[ref]; // TODO maybe localRefs should hold SchemaEnv
 	        const { schemaId } = this.opts;
 	        if (schema)
 	            _sch = new SchemaEnv({ schema, schemaId, root, baseId });
@@ -3214,11 +3214,11 @@ function requireCompile () {
 	    const schOrRef = this.refs[id] || this.schemas[id];
 	    if (typeof schOrRef == "string") {
 	        const sch = resolveSchema.call(this, root, schOrRef);
-	        if (typeof (sch === null || sch === void 0 ? void 0 : sch.schema) !== "object")
+	        if (typeof (sch === null || sch === undefined ? undefined : sch.schema) !== "object")
 	            return;
 	        return getJsonPointer.call(this, p, sch);
 	    }
-	    if (typeof (schOrRef === null || schOrRef === void 0 ? void 0 : schOrRef.schema) !== "object")
+	    if (typeof (schOrRef === null || schOrRef === undefined ? undefined : schOrRef.schema) !== "object")
 	        return;
 	    if (!schOrRef.validate)
 	        compileSchema.call(this, schOrRef);
@@ -3242,7 +3242,7 @@ function requireCompile () {
 	]);
 	function getJsonPointer(parsedRef, { baseId, schema, root }) {
 	    var _a;
-	    if (((_a = parsedRef.fragment) === null || _a === void 0 ? void 0 : _a[0]) !== "/")
+	    if (((_a = parsedRef.fragment) === null || _a === undefined ? undefined : _a[0]) !== "/")
 	        return;
 	    for (const part of parsedRef.fragment.slice(1).split("/")) {
 	        if (typeof schema === "boolean")
@@ -4126,7 +4126,7 @@ function requireCore$1 () {
 	hasRequiredCore$1 = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = void 0;
+		exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = undefined;
 		var validate_1 = requireValidate();
 		Object.defineProperty(exports, "KeywordCxt", { enumerable: true, get: function () { return validate_1.KeywordCxt; } });
 		var codegen_1 = requireCodegen();
@@ -4191,28 +4191,28 @@ function requireCore$1 () {
 		function requiredOptions(o) {
 		    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
 		    const s = o.strict;
-		    const _optz = (_a = o.code) === null || _a === void 0 ? void 0 : _a.optimize;
+		    const _optz = (_a = o.code) === null || _a === undefined ? undefined : _a.optimize;
 		    const optimize = _optz === true || _optz === undefined ? 1 : _optz || 0;
-		    const regExp = (_c = (_b = o.code) === null || _b === void 0 ? void 0 : _b.regExp) !== null && _c !== void 0 ? _c : defaultRegExp;
-		    const uriResolver = (_d = o.uriResolver) !== null && _d !== void 0 ? _d : uri_1.default;
+		    const regExp = (_c = (_b = o.code) === null || _b === undefined ? undefined : _b.regExp) !== null && _c !== undefined ? _c : defaultRegExp;
+		    const uriResolver = (_d = o.uriResolver) !== null && _d !== undefined ? _d : uri_1.default;
 		    return {
-		        strictSchema: (_f = (_e = o.strictSchema) !== null && _e !== void 0 ? _e : s) !== null && _f !== void 0 ? _f : true,
-		        strictNumbers: (_h = (_g = o.strictNumbers) !== null && _g !== void 0 ? _g : s) !== null && _h !== void 0 ? _h : true,
-		        strictTypes: (_k = (_j = o.strictTypes) !== null && _j !== void 0 ? _j : s) !== null && _k !== void 0 ? _k : "log",
-		        strictTuples: (_m = (_l = o.strictTuples) !== null && _l !== void 0 ? _l : s) !== null && _m !== void 0 ? _m : "log",
-		        strictRequired: (_p = (_o = o.strictRequired) !== null && _o !== void 0 ? _o : s) !== null && _p !== void 0 ? _p : false,
+		        strictSchema: (_f = (_e = o.strictSchema) !== null && _e !== undefined ? _e : s) !== null && _f !== undefined ? _f : true,
+		        strictNumbers: (_h = (_g = o.strictNumbers) !== null && _g !== undefined ? _g : s) !== null && _h !== undefined ? _h : true,
+		        strictTypes: (_k = (_j = o.strictTypes) !== null && _j !== undefined ? _j : s) !== null && _k !== undefined ? _k : "log",
+		        strictTuples: (_m = (_l = o.strictTuples) !== null && _l !== undefined ? _l : s) !== null && _m !== undefined ? _m : "log",
+		        strictRequired: (_p = (_o = o.strictRequired) !== null && _o !== undefined ? _o : s) !== null && _p !== undefined ? _p : false,
 		        code: o.code ? { ...o.code, optimize, regExp } : { optimize, regExp },
-		        loopRequired: (_q = o.loopRequired) !== null && _q !== void 0 ? _q : MAX_EXPRESSION,
-		        loopEnum: (_r = o.loopEnum) !== null && _r !== void 0 ? _r : MAX_EXPRESSION,
-		        meta: (_s = o.meta) !== null && _s !== void 0 ? _s : true,
-		        messages: (_t = o.messages) !== null && _t !== void 0 ? _t : true,
-		        inlineRefs: (_u = o.inlineRefs) !== null && _u !== void 0 ? _u : true,
-		        schemaId: (_v = o.schemaId) !== null && _v !== void 0 ? _v : "$id",
-		        addUsedSchema: (_w = o.addUsedSchema) !== null && _w !== void 0 ? _w : true,
-		        validateSchema: (_x = o.validateSchema) !== null && _x !== void 0 ? _x : true,
-		        validateFormats: (_y = o.validateFormats) !== null && _y !== void 0 ? _y : true,
-		        unicodeRegExp: (_z = o.unicodeRegExp) !== null && _z !== void 0 ? _z : true,
-		        int32range: (_0 = o.int32range) !== null && _0 !== void 0 ? _0 : true,
+		        loopRequired: (_q = o.loopRequired) !== null && _q !== undefined ? _q : MAX_EXPRESSION,
+		        loopEnum: (_r = o.loopEnum) !== null && _r !== undefined ? _r : MAX_EXPRESSION,
+		        meta: (_s = o.meta) !== null && _s !== undefined ? _s : true,
+		        messages: (_t = o.messages) !== null && _t !== undefined ? _t : true,
+		        inlineRefs: (_u = o.inlineRefs) !== null && _u !== undefined ? _u : true,
+		        schemaId: (_v = o.schemaId) !== null && _v !== undefined ? _v : "$id",
+		        addUsedSchema: (_w = o.addUsedSchema) !== null && _w !== undefined ? _w : true,
+		        validateSchema: (_x = o.validateSchema) !== null && _x !== undefined ? _x : true,
+		        validateFormats: (_y = o.validateFormats) !== null && _y !== undefined ? _y : true,
+		        unicodeRegExp: (_z = o.unicodeRegExp) !== null && _z !== undefined ? _z : true,
+		        int32range: (_0 = o.int32range) !== null && _0 !== undefined ? _0 : true,
 		        uriResolver: uriResolver,
 		    };
 		}
@@ -4690,7 +4690,7 @@ function requireCore$1 () {
 		}
 		function addRule(keyword, definition, dataType) {
 		    var _a;
-		    const post = definition === null || definition === void 0 ? void 0 : definition.post;
+		    const post = definition === null || definition === undefined ? undefined : definition.post;
 		    if (dataType && post)
 		        throw new Error('keyword with "post" flag cannot have "type"');
 		    const { RULES } = this;
@@ -4715,7 +4715,7 @@ function requireCore$1 () {
 		    else
 		        ruleGroup.rules.push(rule);
 		    RULES.all[keyword] = rule;
-		    (_a = definition.implements) === null || _a === void 0 ? void 0 : _a.forEach((kwd) => this.addKeyword(kwd));
+		    (_a = definition.implements) === null || _a === undefined ? undefined : _a.forEach((kwd) => this.addKeyword(kwd));
 		}
 		function addBeforeRule(ruleGroup, rule, before) {
 		    const i = ruleGroup.rules.findIndex((_rule) => _rule.keyword === before);
@@ -4777,7 +4777,7 @@ function requireRef () {
 	if (hasRequiredRef) return ref;
 	hasRequiredRef = 1;
 	Object.defineProperty(ref, "__esModule", { value: true });
-	ref.callRef = ref.getValidate = void 0;
+	ref.callRef = ref.getValidate = undefined;
 	const ref_error_1 = requireRef_error();
 	const code_1 = requireCode();
 	const codegen_1 = requireCodegen();
@@ -4868,7 +4868,7 @@ function requireRef () {
 	        var _a;
 	        if (!it.opts.unevaluated)
 	            return;
-	        const schEvaluated = (_a = sch === null || sch === void 0 ? void 0 : sch.validate) === null || _a === void 0 ? void 0 : _a.evaluated;
+	        const schEvaluated = (_a = sch === null || sch === undefined ? undefined : sch.validate) === null || _a === undefined ? undefined : _a.evaluated;
 	        // TODO refactor
 	        if (it.props !== true) {
 	            if (schEvaluated && !schEvaluated.dynamicProps) {
@@ -5166,7 +5166,7 @@ function requireRequired () {
 	            const props = cxt.parentSchema.properties;
 	            const { definedProperties } = cxt.it;
 	            for (const requiredKey of schema) {
-	                if ((props === null || props === void 0 ? void 0 : props[requiredKey]) === undefined && !definedProperties.has(requiredKey)) {
+	                if ((props === null || props === undefined ? undefined : props[requiredKey]) === undefined && !definedProperties.has(requiredKey)) {
 	                    const schemaPath = it.schemaEnv.baseId + it.errSchemaPath;
 	                    const msg = `required property "${requiredKey}" is not defined at "${schemaPath}" (strictRequired)`;
 	                    (0, util_1.checkStrictMode)(it, msg, it.opts.strictRequired);
@@ -5401,7 +5401,7 @@ function require_enum () {
 	            throw new Error("enum must have non-empty array");
 	        const useLoop = schema.length >= it.opts.loopEnum;
 	        let eql;
-	        const getEql = () => (eql !== null && eql !== void 0 ? eql : (eql = (0, util_1.useFunc)(gen, equal_1.default)));
+	        const getEql = () => (eql !== null && eql !== undefined ? eql : (eql = (0, util_1.useFunc)(gen, equal_1.default)));
 	        let valid;
 	        if (useLoop || $data) {
 	            valid = gen.let("valid");
@@ -5482,7 +5482,7 @@ function requireAdditionalItems () {
 	if (hasRequiredAdditionalItems) return additionalItems;
 	hasRequiredAdditionalItems = 1;
 	Object.defineProperty(additionalItems, "__esModule", { value: true });
-	additionalItems.validateAdditionalItems = void 0;
+	additionalItems.validateAdditionalItems = undefined;
 	const codegen_1 = requireCodegen();
 	const util_1 = requireUtil();
 	const error = {
@@ -5542,7 +5542,7 @@ function requireItems () {
 	if (hasRequiredItems) return items;
 	hasRequiredItems = 1;
 	Object.defineProperty(items, "__esModule", { value: true });
-	items.validateTuple = void 0;
+	items.validateTuple = undefined;
 	const codegen_1 = requireCodegen();
 	const util_1 = requireUtil();
 	const code_1 = requireCode();
@@ -5766,7 +5766,7 @@ function requireDependencies () {
 	hasRequiredDependencies = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.validateSchemaDeps = exports.validatePropertyDeps = exports.error = void 0;
+		exports.validateSchemaDeps = exports.validatePropertyDeps = exports.error = undefined;
 		const codegen_1 = requireCodegen();
 		const util_1 = requireUtil();
 		const code_1 = requireCode();
@@ -6591,7 +6591,7 @@ function requireMetadata () {
 	if (hasRequiredMetadata) return metadata;
 	hasRequiredMetadata = 1;
 	Object.defineProperty(metadata, "__esModule", { value: true });
-	metadata.contentVocabulary = metadata.metadataVocabulary = void 0;
+	metadata.contentVocabulary = metadata.metadataVocabulary = undefined;
 	metadata.metadataVocabulary = [
 	    "title",
 	    "description",
@@ -6644,7 +6644,7 @@ function requireTypes () {
 	if (hasRequiredTypes) return types;
 	hasRequiredTypes = 1;
 	Object.defineProperty(types, "__esModule", { value: true });
-	types.DiscrError = void 0;
+	types.DiscrError = undefined;
 	var DiscrError;
 	(function (DiscrError) {
 	    DiscrError["Tag"] = "tag";
@@ -6717,7 +6717,7 @@ function requireDiscriminator () {
 	            let tagRequired = true;
 	            for (let i = 0; i < oneOf.length; i++) {
 	                let sch = oneOf[i];
-	                if ((sch === null || sch === void 0 ? void 0 : sch.$ref) && !(0, util_1.schemaHasRulesButRef)(sch, it.self.RULES)) {
+	                if ((sch === null || sch === undefined ? undefined : sch.$ref) && !(0, util_1.schemaHasRulesButRef)(sch, it.self.RULES)) {
 	                    const ref = sch.$ref;
 	                    sch = compile_1.resolveRef.call(it.self, it.schemaEnv.root, it.baseId, ref);
 	                    if (sch instanceof compile_1.SchemaEnv)
@@ -6725,7 +6725,7 @@ function requireDiscriminator () {
 	                    if (sch === undefined)
 	                        throw new ref_error_1.default(it.opts.uriResolver, it.baseId, ref);
 	                }
-	                const propSch = (_a = sch === null || sch === void 0 ? void 0 : sch.properties) === null || _a === void 0 ? void 0 : _a[tagName];
+	                const propSch = (_a = sch === null || sch === undefined ? undefined : sch.properties) === null || _a === undefined ? undefined : _a[tagName];
 	                if (typeof propSch != "object") {
 	                    throw new Error(`discriminator: oneOf subschemas (or referenced schemas) must have "properties/${tagName}"`);
 	                }
@@ -7024,7 +7024,7 @@ function requireAjv () {
 	hasRequiredAjv = 1;
 	(function (module, exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = exports.Ajv = void 0;
+		exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = exports.Ajv = undefined;
 		const core_1 = requireCore$1();
 		const draft7_1 = requireDraft7();
 		const discriminator_1 = requireDiscriminator();
@@ -7090,7 +7090,7 @@ function requireFormats () {
 	hasRequiredFormats = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.formatNames = exports.fastFormats = exports.fullFormats = void 0;
+		exports.formatNames = exports.fastFormats = exports.fullFormats = undefined;
 		function fmtDef(validate, compare) {
 		    return { validate, compare };
 		}
@@ -7309,7 +7309,7 @@ function requireLimit () {
 	hasRequiredLimit = 1;
 	(function (exports) {
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.formatLimitDefinition = void 0;
+		exports.formatLimitDefinition = undefined;
 		const ajv_1 = requireAjv();
 		const codegen_1 = requireCodegen();
 		const ops = codegen_1.operators;
@@ -7414,7 +7414,7 @@ function requireDist () {
 		function addFormats(ajv, list, fs, exportName) {
 		    var _a;
 		    var _b;
-		    (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : (_b.formats = (0, codegen_1._) `require("ajv-formats/dist/formats").${exportName}`);
+		    (_a = (_b = ajv.opts.code).formats) !== null && _a !== undefined ? _a : (_b.formats = (0, codegen_1._) `require("ajv-formats/dist/formats").${exportName}`);
 		    for (const f of list)
 		        ajv.addFormat(f, fs[f]);
 		}
