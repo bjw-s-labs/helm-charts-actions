@@ -10,41 +10,6 @@ on:
       - ready_for_review
 
 jobs:
-  check-node-modules:
-    name: Check modules up to date
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - name: Generate Token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.LAB_ASSISTANT_APP_ID }}
-          private-key: ${{ secrets.LAB_ASSISTANT_APP_KEY }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Check node modules up to date
-        id: checkModules
-        run: .github/workflows/scripts/check-node-modules.sh
-
-      - name: Set PR label if modules need updating
-        if: always() && (steps.checkModules.outcome == 'failure')
-        env:
-          GITHUB_TOKEN: "${{ steps.app-token.outputs.token }}"
-          REPOSITORY: "${{ github.repository }}"
-          PR_NUMBER: "${{ github.event.pull_request.number }}"
-        run: |-
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/$REPOSITORY/issues/$PR_NUMBER/labels \
-            -f "labels[]=ci/update-deps"
-
   check-node-version:
     if: ${{ github.event.pull_request }}
     name: Check Action Node versions
@@ -84,5 +49,4 @@ jobs:
       - name: Build actions
         run: |
           npm ci
-          npm run removeNPMAbsolutePaths
-          npm run build
+          npm bundle

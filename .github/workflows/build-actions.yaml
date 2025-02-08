@@ -38,8 +38,7 @@ jobs:
       - name: Build actions
         run: |
           npm ci
-          npm run removeNPMAbsolutePaths
-          npm run build
+          npm bundle
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5
