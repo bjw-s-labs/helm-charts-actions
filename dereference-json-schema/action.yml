@@ -1,0 +1,12 @@
+name: "Dereference JSON schema"
+description: "Takes a JSON schema at a given path and dereferences all $ref's to create a single schema file"
+inputs:
+  schemaFile:
+    description: "Location of the JSON schema file to dereference"
+    required: true
+  outputFile:
+    description: "Filename to save the dereferenced JSON schema file"
+    required: true
+runs:
+  using: "node20"
+  main: "../lib/dereference-json-schema.js"
