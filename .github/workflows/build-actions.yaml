@@ -44,7 +44,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
-          file_pattern: "package-lock.json package.json node_modules/* lib/*"
+          file_pattern: "dist/*"
           commit_user_name: "${{ vars.LAB_ASSISTANT_USERNAME }}"
           commit_user_email: "${{ vars.LAB_ASSISTANT_EMAIL }}"
           commit_author: "${{ vars.LAB_ASSISTANT_USERNAME }} <${{ vars.LAB_ASSISTANT_EMAIL }}>"
