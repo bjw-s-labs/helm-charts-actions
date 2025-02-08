@@ -12,7 +12,7 @@ jobs:
   build:
     name: Build all actions
     runs-on: ubuntu-24.04
-    if: ${{ github.repository == 'bjw-s/helm-charts-actions' }}
+    if: ${{ github.repository == 'bjw-s-labs/helm-charts-actions' }}
     steps:
       - name: Generate Token
         id: app-token
