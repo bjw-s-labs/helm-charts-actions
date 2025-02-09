@@ -37623,17 +37623,23 @@ var $RefParser = /*@__PURE__*/getDefaultExportFromCjs(libExports);
 
 function run() {
     return __awaiter(this, void 0, void 0, function () {
-        var schemaFile, outputFile, parser, schema, error_1;
+        var schemaFile, outputFile, allowFileNotFound, parser, schema, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
                     schemaFile = coreExports.getInput("schemaFile", { required: true });
                     outputFile = coreExports.getInput("outputFile", { required: true });
+                    allowFileNotFound = coreExports.getInput("allowFileNotFound", { required: true });
                     return [4 /*yield*/, libExports$1.pathExists(schemaFile)];
                 case 1:
                     if (!(_a.sent())) {
-                        coreExports.setFailed("".concat(schemaFile, " does not exist!"));
+                        if (allowFileNotFound === 'true') {
+                            coreExports.warning("".concat(schemaFile, " does not exist!"));
+                        }
+                        else {
+                            coreExports.setFailed("".concat(schemaFile, " does not exist!"));
+                        }
                         return [2 /*return*/];
                     }
                     parser = new $RefParser();
