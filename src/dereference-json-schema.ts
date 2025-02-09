@@ -6,9 +6,14 @@ async function run() {
   try {
     const schemaFile = core.getInput("schemaFile", { required: true });
     const outputFile = core.getInput("outputFile", { required: true });;
+    const allowFileNotFound = core.getInput("allowFileNotFound", { required: true });;
 
     if (!(await fs.pathExists(schemaFile))) {
-      core.setFailed(`${schemaFile} does not exist!`);
+      if (allowFileNotFound === 'true') {
+        core.warning(`${schemaFile} does not exist!`);
+      } else {
+        core.setFailed(`${schemaFile} does not exist!`);
+      }
       return;
     }
 

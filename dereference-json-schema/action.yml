@@ -7,6 +7,10 @@ inputs:
   outputFile:
     description: "Filename to save the dereferenced JSON schema file"
     required: true
+  allowFileNotFound:
+    description: "If true, the action will not fail if the schema file is not found"
+    required: false
+    default: "false"
 runs:
   using: "node20"
   main: "../dist/dereference-json-schema.js"
