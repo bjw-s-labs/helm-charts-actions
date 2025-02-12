@@ -7429,7 +7429,7 @@ function requireDist () {
 var distExports = requireDist();
 var addFormats = /*@__PURE__*/getDefaultExportFromCjs(distExports);
 
-var changelogEntrySchema = {
+const changelogEntrySchema = {
     type: "object",
     properties: {
         kind: {
@@ -7461,9 +7461,9 @@ var changelogEntrySchema = {
     },
 };
 function validateAgainstJsonSchema(object, schema) {
-    var ajv = new Ajv();
+    const ajv = new Ajv();
     addFormats(ajv);
-    var validator = ajv.compile(schema);
+    const validator = ajv.compile(schema);
     return {
         valid: validator(object),
         errors: validator.errors,
@@ -7471,3 +7471,4 @@ function validateAgainstJsonSchema(object, schema) {
 }
 
 export { changelogEntrySchema, validateAgainstJsonSchema };
+//# sourceMappingURL=schemas.js.map

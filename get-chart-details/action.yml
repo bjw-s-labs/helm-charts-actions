@@ -1,0 +1,26 @@
+name: "Get chart details"
+description: "Returns key details of the specified Helm chart"
+inputs:
+  path:
+    description: "Local path to the Helm chart directory"
+    required: true
+  validateChartYaml:
+    description: "Should the Chart.yaml file be valiated"
+    required: false
+    default: "true"
+  requireChangelog:
+    description: "Should Chart.yaml validation check for presenc of a changelog"
+    required: false
+    default: "true"
+outputs:
+  name:
+    description: "Chart name"
+  version:
+    description: "Chart version"
+  type:
+    description: "Chart type"
+  changes:
+    description: "JSON representation of chart changelog (if any)"
+runs:
+  using: "node20"
+  main: "../dist/get-chart-details.js"

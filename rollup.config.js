@@ -14,7 +14,7 @@ export default [
       format: 'es',
       sourcemap: false
     },
-    plugins: [commonjs(), nodeResolve(), typescript()]
+    plugins: [typescript(), nodeResolve(), commonjs()]
   },
   {
     input: 'src/dereference-json-schema.ts',
@@ -22,9 +22,19 @@ export default [
       esModule: true,
       file: 'dist/dereference-json-schema.js',
       format: 'es',
-      sourcemap: false
+      sourcemap: true
     },
-    plugins: [commonjs(), nodeResolve(), typescript()]
+    plugins: [typescript(), nodeResolve(), commonjs()]
+  },
+  {
+    input: 'src/get-chart-details.ts',
+    output: {
+      esModule: true,
+      file: 'dist/get-chart-details.js',
+      format: 'es',
+      sourcemap: true
+    },
+    plugins: [typescript(), nodeResolve(), commonjs()]
   },
   {
     input: 'src/schemas.ts',
@@ -32,9 +42,9 @@ export default [
       esModule: true,
       file: 'dist/schemas.js',
       format: 'es',
-      sourcemap: false
+      sourcemap: true
     },
-    plugins: [commonjs(), json(), nodeResolve(), typescript()]
+    plugins: [typescript(), nodeResolve(), commonjs(), json()]
   },
   {
     input: 'src/verify-chart-changelog-action.ts',
@@ -42,9 +52,9 @@ export default [
       esModule: true,
       file: 'dist/verify-chart-changelog-action.js',
       format: 'es',
-      sourcemap: false
+      sourcemap: true
     },
-    plugins: [commonjs(), json(), nodeResolve(), typescript()]
+    plugins: [typescript(), nodeResolve(), commonjs(), json()]
   },
   {
     input: 'src/verify-chart-version-action.ts',
@@ -52,8 +62,8 @@ export default [
       esModule: true,
       file: 'dist/verify-chart-version-action.js',
       format: 'es',
-      sourcemap: false
+      sourcemap: true
     },
-    plugins: [commonjs(), nodeResolve(), typescript()]
+    plugins: [typescript(), nodeResolve(), commonjs()]
   }
 ]

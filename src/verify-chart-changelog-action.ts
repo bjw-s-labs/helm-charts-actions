@@ -4,7 +4,7 @@ import * as fs from "fs-extra";
 import { FromSchema } from "json-schema-to-ts";
 import * as YAML from "yaml";
 
-import { validateAgainstJsonSchema, changelogEntrySchema } from "./schemas";
+import { validateAgainstJsonSchema, changelogEntrySchema } from "./schemas.ts";
 
 function getChangelogFromYaml(chartYaml: any): string | undefined {
   const changelogAnnotation = "artifacthub.io/changes";

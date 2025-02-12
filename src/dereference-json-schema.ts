@@ -17,9 +17,7 @@ async function run() {
       return;
     }
 
-    let parser = new $RefParser();
-    let schema = await parser.dereference(schemaFile);
-
+    let schema = await $RefParser.dereference(schemaFile);
     await fs.writeFile(outputFile, JSON.stringify(schema, null, 2), 'utf8')
 
     core.info(`Dereferenced JSON schema file to ${outputFile}.`);

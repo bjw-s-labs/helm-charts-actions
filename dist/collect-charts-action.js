@@ -30,66 +30,6 @@ import require$$2$3 from 'child_process';
 import require$$6$1 from 'timers';
 import require$$0$b from 'constants';
 
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-function __awaiter(thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-}
-
-function __generator(thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-}
-
-typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
-
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function getDefaultExportFromCjs (x) {
@@ -28420,8 +28360,8 @@ var Octokit = class {
 };
 
 var distWeb$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    Octokit: Octokit
+	__proto__: null,
+	Octokit: Octokit
 });
 
 var require$$2 = /*@__PURE__*/getAugmentedNamespace(distWeb$1);
@@ -30557,9 +30497,9 @@ function legacyRestEndpointMethods(octokit) {
 legacyRestEndpointMethods.VERSION = VERSION$1;
 
 var distSrc = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    legacyRestEndpointMethods: legacyRestEndpointMethods,
-    restEndpointMethods: restEndpointMethods
+	__proto__: null,
+	legacyRestEndpointMethods: legacyRestEndpointMethods,
+	restEndpointMethods: restEndpointMethods
 });
 
 var require$$3 = /*@__PURE__*/getAugmentedNamespace(distSrc);
@@ -30928,11 +30868,11 @@ function paginateRest(octokit) {
 paginateRest.VERSION = VERSION;
 
 var distWeb = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    composePaginateRest: composePaginateRest,
-    isPaginatingEndpoint: isPaginatingEndpoint,
-    paginateRest: paginateRest,
-    paginatingEndpoints: paginatingEndpoints
+	__proto__: null,
+	composePaginateRest: composePaginateRest,
+	isPaginatingEndpoint: isPaginatingEndpoint,
+	paginateRest: paginateRest,
+	paginatingEndpoints: paginatingEndpoints
 });
 
 var require$$4 = /*@__PURE__*/getAugmentedNamespace(distWeb);
@@ -40652,262 +40592,203 @@ function parse(src, reviver, options) {
     return doc.toJS(Object.assign({ reviver: _reviver }, options));
 }
 
-function requestAddedModifiedFiles(baseCommit, headCommit, githubToken, requireHeadAheadOfBase) {
-    return __awaiter(this, void 0, void 0, function () {
-        var result, octokit, response, responseFiles, _i, responseFiles_1, file, filestatus;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    result = [];
-                    octokit = githubExports.getOctokit(githubToken);
-                    coreExports.info("Base commit: ".concat(baseCommit));
-                    coreExports.info("Head commit: ".concat(headCommit));
-                    return [4 /*yield*/, octokit.rest.repos.compareCommits({
-                            base: baseCommit,
-                            head: headCommit,
-                            owner: githubExports.context.repo.owner,
-                            repo: githubExports.context.repo.repo,
-                        })];
-                case 1:
-                    response = _a.sent();
-                    // Ensure that the request was successful.
-                    if (response.status !== 200) {
-                        throw new Error("The GitHub API returned ".concat(response.status, ", expected 200."));
-                    }
-                    // Ensure that the head commit is ahead of the base commit.
-                    if (requireHeadAheadOfBase && response.data.status !== "ahead") {
-                        throw new Error("The head commit for this ".concat(githubExports.context.eventName, " event is not ahead of the base commit."));
-                    }
-                    responseFiles = response.data.files || [];
-                    for (_i = 0, responseFiles_1 = responseFiles; _i < responseFiles_1.length; _i++) {
-                        file = responseFiles_1[_i];
-                        filestatus = file.status;
-                        if (filestatus === "added" || filestatus === "modified") {
-                            result.push(file.filename);
-                        }
-                    }
-                    return [2 /*return*/, result];
-            }
-        });
+async function requestAddedModifiedFiles(baseCommit, headCommit, githubToken, requireHeadAheadOfBase) {
+    const result = [];
+    const octokit = githubExports.getOctokit(githubToken);
+    coreExports.info(`Base commit: ${baseCommit}`);
+    coreExports.info(`Head commit: ${headCommit}`);
+    // Use GitHub's compare two commits API.
+    const response = await octokit.rest.repos.compareCommits({
+        base: baseCommit,
+        head: headCommit,
+        owner: githubExports.context.repo.owner,
+        repo: githubExports.context.repo.repo,
     });
+    // Ensure that the request was successful.
+    if (response.status !== 200) {
+        throw new Error(`The GitHub API returned ${response.status}, expected 200.`);
+    }
+    // Ensure that the head commit is ahead of the base commit.
+    if (requireHeadAheadOfBase && response.data.status !== "ahead") {
+        throw new Error(`The head commit for this ${githubExports.context.eventName} event is not ahead of the base commit.`);
+    }
+    const responseFiles = response.data.files || [];
+    for (const file of responseFiles) {
+        const filestatus = file.status;
+        if (filestatus === "added" || filestatus === "modified") {
+            result.push(file.filename);
+        }
+    }
+    return result;
 }
-function requestAllFiles(commit, githubToken) {
-    return __awaiter(this, void 0, void 0, function () {
-        var result, octokit, response, responseTreeItems, _i, responseTreeItems_1, item;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    result = [];
-                    octokit = githubExports.getOctokit(githubToken);
-                    coreExports.info("Commit SHA: ".concat(commit));
-                    return [4 /*yield*/, octokit.rest.git.getTree({
-                            tree_sha: commit,
-                            owner: githubExports.context.repo.owner,
-                            repo: githubExports.context.repo.repo,
-                            recursive: "true",
-                        })];
-                case 1:
-                    response = _a.sent();
-                    // Ensure that the request was successful.
-                    if (response.status !== 200) {
-                        throw new Error("The GitHub API returned ".concat(response.status, ", expected 200."));
-                    }
-                    responseTreeItems = response.data.tree || [];
-                    for (_i = 0, responseTreeItems_1 = responseTreeItems; _i < responseTreeItems_1.length; _i++) {
-                        item = responseTreeItems_1[_i];
-                        if (item.type === "blob" && item.path) {
-                            result.push(item.path);
-                        }
-                    }
-                    return [2 /*return*/, result];
-            }
-        });
+async function requestAllFiles(commit, githubToken) {
+    const result = [];
+    const octokit = githubExports.getOctokit(githubToken);
+    coreExports.info(`Commit SHA: ${commit}`);
+    const response = await octokit.rest.git.getTree({
+        tree_sha: commit,
+        owner: githubExports.context.repo.owner,
+        repo: githubExports.context.repo.repo,
+        recursive: "true",
     });
+    // Ensure that the request was successful.
+    if (response.status !== 200) {
+        throw new Error(`The GitHub API returned ${response.status}, expected 200.`);
+    }
+    const responseTreeItems = response.data.tree || [];
+    for (const item of responseTreeItems) {
+        if (item.type === "blob" && item.path) {
+            result.push(item.path);
+        }
+    }
+    return result;
 }
-function getRepoConfig(configPath) {
-    return __awaiter(this, void 0, void 0, function () {
-        var repoConfigRaw, yamlConfig, repoConfig;
-        var _a, _b, _c;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
-                case 0: return [4 /*yield*/, libExports.pathExists(configPath)];
-                case 1:
-                    // Ensure that the repo config file exists.
-                    if (!(_d.sent())) {
-                        throw new Error("".concat(configPath, " Does not exist!"));
-                    }
-                    return [4 /*yield*/, libExports.readFile(configPath, "utf8")];
-                case 2:
-                    repoConfigRaw = _d.sent();
-                    return [4 /*yield*/, parse(repoConfigRaw)];
-                case 3:
-                    yamlConfig = _d.sent();
-                    if (yamlConfig) {
-                        repoConfig = {
-                            excluded_charts_install: (_a = yamlConfig["excluded-charts-install"]) !== null && _a !== void 0 ? _a : [],
-                            excluded_charts_lint: (_b = yamlConfig["excluded-charts-lint"]) !== null && _b !== void 0 ? _b : [],
-                            excluded_charts_release: (_c = yamlConfig["excluded-charts-release"]) !== null && _c !== void 0 ? _c : [],
-                        };
-                    }
-                    else {
-                        repoConfig = {
-                            excluded_charts_install: [],
-                            excluded_charts_lint: [],
-                            excluded_charts_release: [],
-                        };
-                    }
-                    return [2 /*return*/, repoConfig];
-            }
-        });
-    });
+async function getRepoConfig(configPath) {
+    // Ensure that the repo config file exists.
+    if (!(await libExports.pathExists(configPath))) {
+        throw new Error(`${configPath} Does not exist!`);
+    }
+    const repoConfigRaw = await libExports.readFile(configPath, "utf8");
+    const yamlConfig = await parse(repoConfigRaw);
+    let repoConfig;
+    if (yamlConfig) {
+        repoConfig = {
+            excluded_charts_install: yamlConfig["excluded-charts-install"] ?? [],
+            excluded_charts_lint: yamlConfig["excluded-charts-lint"] ?? [],
+            excluded_charts_release: yamlConfig["excluded-charts-release"] ?? [],
+        };
+    }
+    else {
+        repoConfig = {
+            excluded_charts_install: [],
+            excluded_charts_lint: [],
+            excluded_charts_release: [],
+        };
+    }
+    return repoConfig;
 }
 function getChartYamlFromFile(path) {
-    var chartYamlFile = libExports.readFileSync(path, "utf8");
+    const chartYamlFile = libExports.readFileSync(path, "utf8");
     return parse(chartYamlFile);
 }
 function filterChangedCharts(files, parentFolder) {
-    var filteredChartFiles = files.filter(function (file) {
-        var rel = require$$1.relative(parentFolder, file);
+    const filteredChartFiles = files.filter((file) => {
+        const rel = require$$1.relative(parentFolder, file);
         return !rel.startsWith("../") && rel !== "..";
     });
-    var changedCharts = [];
-    for (var _i = 0, filteredChartFiles_1 = filteredChartFiles; _i < filteredChartFiles_1.length; _i++) {
-        var file = filteredChartFiles_1[_i];
-        var absoluteParentFolder = require$$1.resolve(parentFolder);
-        var absoluteFileDirname = require$$1.resolve(require$$1.dirname(file));
-        var relativeFileDirname = absoluteFileDirname.slice(absoluteParentFolder.length + 1);
-        var chartPathParts = relativeFileDirname.split("/");
-        var chartType = chartPathParts[0];
-        var chartName = chartPathParts[1];
+    const changedCharts = [];
+    for (const file of filteredChartFiles) {
+        const absoluteParentFolder = require$$1.resolve(parentFolder);
+        const absoluteFileDirname = require$$1.resolve(require$$1.dirname(file));
+        const relativeFileDirname = absoluteFileDirname.slice(absoluteParentFolder.length + 1);
+        const chartPathParts = relativeFileDirname.split("/");
+        const chartType = chartPathParts[0];
+        const chartName = chartPathParts[1];
         if (chartType && chartName) {
-            changedCharts.push("".concat(chartType, "/").concat(chartName));
+            changedCharts.push(`${chartType}/${chartName}`);
         }
     }
     // Return only unique items
-    var result = changedCharts.filter(function (item, index) { return changedCharts.indexOf(item) === index; });
+    var result = changedCharts.filter((item, index) => changedCharts.indexOf(item) === index);
     return result;
 }
-function run() {
-    return __awaiter(this, void 0, void 0, function () {
-        var githubToken, chartsFolder_1, requireHeadAheadOfBase, repoConfigFilePath, getAllCharts, overrideCharts, repoConfig_1, responseCharts, eventName, baseCommit, headCommit, responseFiles, libraryCharts, applicationCharts, chartsToInstall, chartsToLint, libraryChartsToRelease, applicationChartsToRelease, error_1;
-        var _a, _b, _c, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
-                case 0:
-                    _e.trys.push([0, 8, , 9]);
-                    githubToken = coreExports.getInput("token", { required: true });
-                    chartsFolder_1 = coreExports.getInput("chartsFolder", { required: true });
-                    requireHeadAheadOfBase = coreExports.getInput("requireHeadAheadOfBase", {
-                        required: false,
-                    });
-                    repoConfigFilePath = coreExports.getInput("repoConfigFile", {
-                        required: true,
-                    });
-                    getAllCharts = coreExports.getInput("getAllCharts", { required: false });
-                    overrideCharts = coreExports.getInput("overrideCharts", { required: false });
-                    return [4 /*yield*/, getRepoConfig(repoConfigFilePath)];
-                case 1:
-                    repoConfig_1 = _e.sent();
-                    coreExports.info("Repo configuration: ".concat(JSON.stringify(repoConfig_1, undefined, 2)));
-                    responseCharts = void 0;
-                    if (!(overrideCharts && overrideCharts !== "[]")) return [3 /*break*/, 2];
-                    responseCharts = parse(overrideCharts);
-                    return [3 /*break*/, 7];
-                case 2:
-                    eventName = githubExports.context.eventName;
-                    baseCommit = void 0;
-                    headCommit = void 0;
-                    switch (eventName) {
-                        case "pull_request":
-                            baseCommit = (_b = (_a = githubExports.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.base) === null || _b === void 0 ? void 0 : _b.sha;
-                            headCommit = (_d = (_c = githubExports.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head) === null || _d === void 0 ? void 0 : _d.sha;
-                            break;
-                        case "push":
-                            baseCommit = githubExports.context.payload.before;
-                            headCommit = githubExports.context.payload.after;
-                            break;
-                        case "workflow_dispatch":
-                            getAllCharts = "true";
-                            baseCommit = "";
-                            headCommit = githubExports.context.sha;
-                            break;
-                        default:
-                            throw new Error("This action only supports pull requests, pushes and workflow_dispatch," +
-                                "".concat(githubExports.context.eventName, " events are not supported."));
-                    }
-                    if (!headCommit) {
-                        throw new Error("No HEAD commit was found to compare to.");
-                    }
-                    responseFiles = void 0;
-                    if (!(getAllCharts === "true")) return [3 /*break*/, 4];
-                    return [4 /*yield*/, requestAllFiles(headCommit, githubToken)];
-                case 3:
-                    responseFiles = _e.sent();
-                    return [3 /*break*/, 6];
-                case 4: return [4 /*yield*/, requestAddedModifiedFiles(baseCommit, headCommit, githubToken, requireHeadAheadOfBase === "true")];
-                case 5:
-                    responseFiles = _e.sent();
-                    _e.label = 6;
-                case 6:
-                    responseCharts = filterChangedCharts(responseFiles, chartsFolder_1);
-                    _e.label = 7;
-                case 7:
-                    // Determine changed charts
-                    coreExports.info("Charts: ".concat(JSON.stringify(responseCharts, undefined, 2)));
-                    coreExports.setOutput("charts", responseCharts);
-                    libraryCharts = responseCharts.filter(function (chart) {
-                        var chartYaml = getChartYamlFromFile("".concat(chartsFolder_1, "/").concat(chart, "/Chart.yaml"));
-                        return chartYaml.type === "library";
-                    });
-                    coreExports.info("Library charts: ".concat(JSON.stringify(libraryCharts, undefined, 2)));
-                    coreExports.setOutput("chartsLibrary", libraryCharts);
-                    applicationCharts = responseCharts.filter(function (chart) {
-                        var chartYaml = getChartYamlFromFile("".concat(chartsFolder_1, "/").concat(chart, "/Chart.yaml"));
-                        return chartYaml.type !== "library";
-                    });
-                    coreExports.info("Application charts: ".concat(JSON.stringify(applicationCharts, undefined, 2)));
-                    coreExports.setOutput("chartsApplication", applicationCharts);
-                    chartsToInstall = responseCharts.filter(function (x) { return !repoConfig_1.excluded_charts_install.includes(x); });
-                    coreExports.info("Charts to install: ".concat(JSON.stringify(chartsToInstall, undefined, 2)));
-                    coreExports.setOutput("chartsToInstall", chartsToInstall);
-                    chartsToLint = responseCharts.filter(function (x) { return !repoConfig_1.excluded_charts_lint.includes(x); });
-                    coreExports.info("Charts to lint: ".concat(JSON.stringify(chartsToLint, undefined, 2)));
-                    coreExports.setOutput("chartsToLint", chartsToLint);
-                    libraryChartsToRelease = libraryCharts.filter(function (x) { return !repoConfig_1.excluded_charts_release.includes(x); });
-                    coreExports.info("Library charts to release: ".concat(JSON.stringify(libraryChartsToRelease, undefined, 2)));
-                    coreExports.setOutput("chartsLibraryToRelease", libraryChartsToRelease);
-                    applicationChartsToRelease = applicationCharts.filter(function (x) { return !repoConfig_1.excluded_charts_release.includes(x); });
-                    coreExports.info("Application charts to release: ".concat(JSON.stringify(applicationChartsToRelease, undefined, 2)));
-                    coreExports.setOutput("chartsApplicationToRelease", applicationChartsToRelease);
-                    return [3 /*break*/, 9];
-                case 8:
-                    error_1 = _e.sent();
-                    coreExports.setFailed(String(error_1));
-                    return [3 /*break*/, 9];
-                case 9: return [2 /*return*/];
-            }
+async function run() {
+    try {
+        const githubToken = coreExports.getInput("token", { required: true });
+        const chartsFolder = coreExports.getInput("chartsFolder", { required: true });
+        const requireHeadAheadOfBase = coreExports.getInput("requireHeadAheadOfBase", {
+            required: false,
         });
-    });
+        const repoConfigFilePath = coreExports.getInput("repoConfigFile", {
+            required: true,
+        });
+        let getAllCharts = coreExports.getInput("getAllCharts", { required: false });
+        const overrideCharts = coreExports.getInput("overrideCharts", { required: false });
+        const repoConfig = await getRepoConfig(repoConfigFilePath);
+        coreExports.info(`Repo configuration: ${JSON.stringify(repoConfig, undefined, 2)}`);
+        let responseCharts;
+        if (overrideCharts && overrideCharts !== "[]") {
+            responseCharts = parse(overrideCharts);
+        }
+        else {
+            const eventName = githubExports.context.eventName;
+            let baseCommit;
+            let headCommit;
+            switch (eventName) {
+                case "pull_request":
+                    baseCommit = githubExports.context.payload.pull_request?.base?.sha;
+                    headCommit = githubExports.context.payload.pull_request?.head?.sha;
+                    break;
+                case "push":
+                    baseCommit = githubExports.context.payload.before;
+                    headCommit = githubExports.context.payload.after;
+                    break;
+                case "workflow_dispatch":
+                    getAllCharts = "true";
+                    baseCommit = "";
+                    headCommit = githubExports.context.sha;
+                    break;
+                default:
+                    throw new Error(`This action only supports pull requests, pushes and workflow_dispatch,` +
+                        `${githubExports.context.eventName} events are not supported.`);
+            }
+            if (!headCommit) {
+                throw new Error(`No HEAD commit was found to compare to.`);
+            }
+            let responseFiles;
+            if (getAllCharts === "true") {
+                responseFiles = await requestAllFiles(headCommit, githubToken);
+            }
+            else {
+                responseFiles = await requestAddedModifiedFiles(baseCommit, headCommit, githubToken, requireHeadAheadOfBase === "true");
+            }
+            responseCharts = filterChangedCharts(responseFiles, chartsFolder);
+        }
+        // Determine changed charts
+        coreExports.info(`Charts: ${JSON.stringify(responseCharts, undefined, 2)}`);
+        coreExports.setOutput("charts", responseCharts);
+        // Determine changed Library charts
+        const libraryCharts = responseCharts.filter((chart) => {
+            const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`);
+            return chartYaml.type === "library";
+        });
+        coreExports.info(`Library charts: ${JSON.stringify(libraryCharts, undefined, 2)}`);
+        coreExports.setOutput("chartsLibrary", libraryCharts);
+        // Determine changed Application charts
+        const applicationCharts = responseCharts.filter((chart) => {
+            const chartYaml = getChartYamlFromFile(`${chartsFolder}/${chart}/Chart.yaml`);
+            return chartYaml.type !== "library";
+        });
+        coreExports.info(`Application charts: ${JSON.stringify(applicationCharts, undefined, 2)}`);
+        coreExports.setOutput("chartsApplication", applicationCharts);
+        // Determine charts to install
+        const chartsToInstall = responseCharts.filter((x) => !repoConfig.excluded_charts_install.includes(x));
+        coreExports.info(`Charts to install: ${JSON.stringify(chartsToInstall, undefined, 2)}`);
+        coreExports.setOutput("chartsToInstall", chartsToInstall);
+        // Determine charts to lint
+        const chartsToLint = responseCharts.filter((x) => !repoConfig.excluded_charts_lint.includes(x));
+        coreExports.info(`Charts to lint: ${JSON.stringify(chartsToLint, undefined, 2)}`);
+        coreExports.setOutput("chartsToLint", chartsToLint);
+        // Determine Library charts to release
+        const libraryChartsToRelease = libraryCharts.filter((x) => !repoConfig.excluded_charts_release.includes(x));
+        coreExports.info(`Library charts to release: ${JSON.stringify(libraryChartsToRelease, undefined, 2)}`);
+        coreExports.setOutput("chartsLibraryToRelease", libraryChartsToRelease);
+        // Determine Application charts to release
+        const applicationChartsToRelease = applicationCharts.filter((x) => !repoConfig.excluded_charts_release.includes(x));
+        coreExports.info(`Application charts to release: ${JSON.stringify(applicationChartsToRelease, undefined, 2)}`);
+        coreExports.setOutput("chartsApplicationToRelease", applicationChartsToRelease);
+    }
+    catch (error) {
+        coreExports.setFailed(String(error));
+    }
 }
-function runWrapper() {
-    return __awaiter(this, void 0, void 0, function () {
-        var error_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, run()];
-                case 1:
-                    _a.sent();
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_2 = _a.sent();
-                    coreExports.setFailed("collect-charts action failed: ".concat(error_2));
-                    console.log(error_2);
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
+async function runWrapper() {
+    try {
+        await run();
+    }
+    catch (error) {
+        coreExports.setFailed(`collect-charts action failed: ${error}`);
+        console.log(error);
+    }
 }
 void runWrapper();

@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "get-chart-details",
+      "type": "node",
+      "request": "launch",
+      "program": "./src/get-chart-details.ts",
+      "runtimeExecutable": "tsx",
+      "cwd": "${workspaceRoot}",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**",
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "INPUT_PATH": "",
+        "INPUT_VALIDATECHARTYAML": "true",
+        "INPUT_REQUIRECHANGELOG": "true",
+      }
+    }
+  ]
+}
