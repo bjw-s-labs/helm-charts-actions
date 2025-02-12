@@ -40,7 +40,7 @@ function getChartYamlFromFile(path: string) {
 }
 
 function setOutput(key: string, value: string) {
-  core.info(`Setting output: ${key}=${value}`);
+  core.debug(`output ${key}: ${value}`);
   core.setOutput(key, value);
 }
 
