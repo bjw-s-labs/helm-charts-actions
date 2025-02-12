@@ -36,22 +36,27 @@ runs:
           const fs = require('fs');
           const chartPath = '${{ inputs.path }}';
 
+          if (!fs.existsSync(`${chartPath}}`)) {
+            core.setFailed(`${chartPath} does not exist`);
+            return;
+          }
+
           if (!fs.existsSync(`${chartPath}/Chart.yaml}`)) {
             core.setFailed(`No Chart.yaml present in ${chartPath}`);
             return;
           }
 
-    - name: Install Kubernetes tools
-      uses: yokawasa/action-setup-kube-tools@v0.11.2
-      with:
-        setup-tools: |
-          helmv3
-        helm: "${{ inputs.helmVersion }}"
+    # - name: Install Kubernetes tools
+    #   uses: yokawasa/action-setup-kube-tools@v0.11.2
+    #   with:
+    #     setup-tools: |
+    #       helmv3
+    #     helm: "${{ inputs.helmVersion }}"
 
-    - name: Make sure the output directory exists
-      shell: bash
-      run: |
-        mkdir -p "${{ runner.temp }}/charts_out"
+    # - name: Make sure the output directory exists
+    #   shell: bash
+    #   run: |
+    #     mkdir -p "${{ runner.temp }}/charts_out"
 
     # - name: Grab chart details
     #   id: chart-details
