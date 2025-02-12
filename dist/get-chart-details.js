@@ -38283,7 +38283,7 @@ function getChartYamlFromFile(path) {
     return parse(chartYamlFile);
 }
 function setOutput(key, value) {
-    coreExports.info(`Setting output: ${key}=${value}`);
+    coreExports.debug(`output ${key}: ${value}`);
     coreExports.setOutput(key, value);
 }
 function ValidateObject(schema, object) {
