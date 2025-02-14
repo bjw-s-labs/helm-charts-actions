@@ -4,12 +4,16 @@ inputs:
   path:
     description: "Local path to the Helm chart directory"
     required: true
+  allowChartToNotExist:
+    description: "Allow Chart.yaml to not be present"
+    required: false
+    default: "false"
   validateChartYaml:
-    description: "Should the Chart.yaml file be valiated"
+    description: "Should Chart.yaml be validated"
     required: false
     default: "true"
   requireChangelog:
-    description: "Should Chart.yaml validation check for presenc of a changelog"
+    description: "Should Chart.yaml validation check for presence of a changelog"
     required: false
     default: "true"
 outputs:

@@ -59,11 +59,15 @@ function ValidateObject(schema: z.SomeZodObject, object: any) {
 async function run() {
   try {
     const chartPath = core.getInput("path", { required: true });
+    const allowChartToNotExist = core.getInput("allowChartToNotExist") === "true";
     const validateChartYaml = core.getInput("validateChartYaml") === "true";
     const requireChangelog = core.getInput("requireChangelog") === "true";
 
     if (!(fs.existsSync(chartPath))) {
-      throw new Error(`${chartPath} does not exist!`);
+      if (!allowChartToNotExist) {
+        core.setFailed(`${chartPath} does not exist!`);
+      }
+      return;
     }
 
     const chartYamlPath = path.join(chartPath, "Chart.yaml");
