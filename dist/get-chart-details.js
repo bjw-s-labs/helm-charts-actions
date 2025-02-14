@@ -38299,10 +38299,14 @@ function ValidateObject(schema, object) {
 async function run() {
     try {
         const chartPath = coreExports.getInput("path", { required: true });
+        const allowChartToNotExist = coreExports.getInput("allowChartToNotExist") === "true";
         const validateChartYaml = coreExports.getInput("validateChartYaml") === "true";
         const requireChangelog = coreExports.getInput("requireChangelog") === "true";
         if (!(fs.existsSync(chartPath))) {
-            throw new Error(`${chartPath} does not exist!`);
+            if (!allowChartToNotExist) {
+                coreExports.setFailed(`${chartPath} does not exist!`);
+            }
+            return;
         }
         const chartYamlPath = require$$1.join(chartPath, "Chart.yaml");
         coreExports.info(`Processing chart at ${chartYamlPath}`);
