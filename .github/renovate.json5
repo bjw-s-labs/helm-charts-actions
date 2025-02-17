@@ -1,6 +1,0 @@
-{
-  extends: [
-    "github>bjw-s/renovate-config",
-    "github>bjw-s/renovate-config:automerge-github-actions",
-  ],
-}

@@ -1,0 +1,21 @@
+{
+  extends: [
+    "github>bjw-s/renovate-config",
+    "github>bjw-s/renovate-config:automerge-github-actions",
+  ],
+  packageRules: [
+    {
+      description: "rollup",
+      groupName: "rollup",
+      matchPackageNames: [
+        "@rollup/rollup-linux-x64-gnu",
+        "rollup"
+      ],
+      matchDatasources: ["npm"],
+      group: {
+        commitMessageTopic: "{{{groupName}}} group",
+        commitMessageSuffix: ""
+      },
+    },
+  ]
+}
