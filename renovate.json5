@@ -3,6 +3,7 @@
     "github>bjw-s/renovate-config",
     "github>bjw-s/renovate-config:automerge-github-actions",
   ],
+  ignorePaths: [".archive/**"],
   packageRules: [
     {
       description: "rollup",
@@ -17,5 +18,11 @@
         commitMessageSuffix: ""
       },
     },
+    {
+      description: "Auto merge npm patches",
+      matchDatasources: ["npm"],
+      automerge: true,
+      matchUpdateTypes: ["patch"]
+    }
   ]
 }
