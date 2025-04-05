@@ -16,13 +16,13 @@ jobs:
     steps:
       - name: Generate Token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         with:
           app-id: ${{ secrets.LAB_ASSISTANT_APP_ID }}
           private-key: ${{ secrets.LAB_ASSISTANT_APP_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.head_ref }}
@@ -30,7 +30,7 @@ jobs:
 
       - name: Setup Node.js
         id: setup-node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version-file: .node-version
           cache: npm
@@ -41,7 +41,7 @@ jobs:
           npm run bundle
 
       - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5
         with:
           commit_message: "chore: Autobuild from ref: ${{ github.sha }} [ci skip]"
           file_pattern: "dist/*"
