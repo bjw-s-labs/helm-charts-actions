@@ -316,11 +316,11 @@ function requireProxy () {
 	    })();
 	    if (proxyVar) {
 	        try {
-	            return new URL(proxyVar);
+	            return new DecodedURL(proxyVar);
 	        }
 	        catch (_a) {
 	            if (!proxyVar.startsWith('http://') && !proxyVar.startsWith('https://'))
-	                return new URL(`http://${proxyVar}`);
+	                return new DecodedURL(`http://${proxyVar}`);
 	        }
 	    }
 	    else {
@@ -378,6 +378,19 @@ function requireProxy () {
 	        hostLower.startsWith('127.') ||
 	        hostLower.startsWith('[::1]') ||
 	        hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
+	}
+	class DecodedURL extends URL {
+	    constructor(url, base) {
+	        super(url, base);
+	        this._decodedUsername = decodeURIComponent(super.username);
+	        this._decodedPassword = decodeURIComponent(super.password);
+	    }
+	    get username() {
+	        return this._decodedUsername;
+	    }
+	    get password() {
+	        return this._decodedPassword;
+	    }
 	}
 	
 	return proxy;
@@ -24709,7 +24722,7 @@ function requireLib$2 () {
 	        }
 	        const usingSsl = parsedUrl.protocol === 'https:';
 	        proxyAgent = new undici_1.ProxyAgent(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
-	            token: `${proxyUrl.username}:${proxyUrl.password}`
+	            token: `Basic ${Buffer.from(`${proxyUrl.username}:${proxyUrl.password}`).toString('base64')}`
 	        })));
 	        this._proxyAgentDispatcher = proxyAgent;
 	        if (usingSsl && this._ignoreSslError) {
@@ -37613,11 +37626,11 @@ var $RefParser = /*@__PURE__*/getDefaultExportFromCjs(libExports);
 
 async function run() {
     try {
-        const schemaFile = coreExports.getInput("schemaFile", { required: true });
-        const outputFile = coreExports.getInput("outputFile", { required: true });
-        ;
-        const allowFileNotFound = coreExports.getInput("allowFileNotFound", { required: true });
-        ;
+        const schemaFile = coreExports.getInput('schemaFile', { required: true });
+        const outputFile = coreExports.getInput('outputFile', { required: true });
+        const allowFileNotFound = coreExports.getInput('allowFileNotFound', {
+            required: true
+        });
         if (!(await libExports$1.pathExists(schemaFile))) {
             if (allowFileNotFound === 'true') {
                 coreExports.warning(`${schemaFile} does not exist!`);

@@ -1,13 +1,13 @@
-import * as require$$1 from 'path';
-import require$$1__default from 'path';
+import * as require$$1$1 from 'path';
+import require$$1__default$1 from 'path';
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
-import * as fs from 'fs';
-import fs__default from 'fs';
+import * as require$$1 from 'fs';
+import require$$1__default from 'fs';
 import require$$2 from 'http';
 import require$$3 from 'https';
 import require$$0$4 from 'net';
-import require$$1$1 from 'tls';
+import require$$1$2 from 'tls';
 import require$$4 from 'events';
 import require$$0$3 from 'assert';
 import require$$0$2 from 'util';
@@ -16,14 +16,14 @@ import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$13 from 'stream/web';
 import require$$0$7 from 'node:stream';
-import require$$1$2 from 'node:util';
+import require$$1$3 from 'node:util';
 import require$$0$6 from 'node:events';
 import require$$0$8 from 'worker_threads';
 import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
 import require$$4$1 from 'async_hooks';
-import require$$1$3 from 'console';
-import require$$1$4 from 'url';
+import require$$1$4 from 'console';
+import require$$1$5 from 'url';
 import require$$3$1 from 'zlib';
 import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
@@ -224,7 +224,7 @@ function requireFileCommand () {
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	const crypto = __importStar(require$$0$1);
-	const fs = __importStar(fs__default);
+	const fs = __importStar(require$$1__default);
 	const os = __importStar(require$$0);
 	const utils_1 = requireUtils$1();
 	function issueFileCommand(command, message) {
@@ -287,11 +287,11 @@ function requireProxy () {
 	    })();
 	    if (proxyVar) {
 	        try {
-	            return new URL(proxyVar);
+	            return new DecodedURL(proxyVar);
 	        }
 	        catch (_a) {
 	            if (!proxyVar.startsWith('http://') && !proxyVar.startsWith('https://'))
-	                return new URL(`http://${proxyVar}`);
+	                return new DecodedURL(`http://${proxyVar}`);
 	        }
 	    }
 	    else {
@@ -350,6 +350,19 @@ function requireProxy () {
 	        hostLower.startsWith('[::1]') ||
 	        hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
 	}
+	class DecodedURL extends URL {
+	    constructor(url, base) {
+	        super(url, base);
+	        this._decodedUsername = decodeURIComponent(super.username);
+	        this._decodedPassword = decodeURIComponent(super.password);
+	    }
+	    get username() {
+	        return this._decodedUsername;
+	    }
+	    get password() {
+	        return this._decodedPassword;
+	    }
+	}
 	
 	return proxy;
 }
@@ -361,7 +374,7 @@ var hasRequiredTunnel$1;
 function requireTunnel$1 () {
 	if (hasRequiredTunnel$1) return tunnel$1;
 	hasRequiredTunnel$1 = 1;
-	var tls = require$$1$1;
+	var tls = require$$1$2;
 	var http = require$$2;
 	var https = require$$3;
 	var events = require$$4;
@@ -1606,7 +1619,7 @@ function requireSbmh () {
 	 * by Hongli Lai at: https://github.com/FooBarWidget/boyer-moore-horspool
 	 */
 	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$3.inherits;
 
 	function SBMH (needle) {
 	  if (typeof needle === 'string') {
@@ -1815,7 +1828,7 @@ function requirePartStream () {
 	if (hasRequiredPartStream) return PartStream_1;
 	hasRequiredPartStream = 1;
 
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$3.inherits;
 	const ReadableStream = require$$0$7.Readable;
 
 	function PartStream (opts) {
@@ -1861,7 +1874,7 @@ function requireHeaderParser () {
 	hasRequiredHeaderParser = 1;
 
 	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$3.inherits;
 	const getLimit = requireGetLimit();
 
 	const StreamSearch = requireSbmh();
@@ -1969,7 +1982,7 @@ function requireDicer () {
 	hasRequiredDicer = 1;
 
 	const WritableStream = require$$0$7.Writable;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$3.inherits;
 
 	const StreamSearch = requireSbmh();
 
@@ -2546,7 +2559,7 @@ function requireMultipart () {
 	//     -- this will require modifications to utils.parseParams
 
 	const { Readable } = require$$0$7;
-	const { inherits } = require$$1$2;
+	const { inherits } = require$$1$3;
 
 	const Dicer = requireDicer();
 
@@ -3112,7 +3125,7 @@ function requireMain () {
 	hasRequiredMain = 1;
 
 	const WritableStream = require$$0$7.Writable;
-	const { inherits } = require$$1$2;
+	const { inherits } = require$$1$3;
 	const Dicer = requireDicer();
 
 	const MultipartParser = requireMultipart();
@@ -7855,7 +7868,7 @@ function requireConnect () {
 	    let socket;
 	    if (protocol === 'https:') {
 	      if (!tls) {
-	        tls = require$$1$1;
+	        tls = require$$1$2;
 	      }
 	      servername = servername || options.servername || util.getServerName(host) || null;
 
@@ -13860,7 +13873,7 @@ function requirePendingInterceptorsFormatter () {
 	hasRequiredPendingInterceptorsFormatter = 1;
 
 	const { Transform } = require$$0$5;
-	const { Console } = require$$1$3;
+	const { Console } = require$$1$4;
 
 	/**
 	 * Gets the output of `console.table(…)` as a string.
@@ -14087,7 +14100,7 @@ function requireProxyAgent () {
 	hasRequiredProxyAgent = 1;
 
 	const { kProxy, kClose, kDestroy, kInterceptors } = requireSymbols$4();
-	const { URL } = require$$1$4;
+	const { URL } = require$$1$5;
 	const Agent = requireAgent();
 	const Pool = requirePool();
 	const DispatcherBase = requireDispatcherBase();
@@ -24680,7 +24693,7 @@ function requireLib () {
 	        }
 	        const usingSsl = parsedUrl.protocol === 'https:';
 	        proxyAgent = new undici_1.ProxyAgent(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
-	            token: `${proxyUrl.username}:${proxyUrl.password}`
+	            token: `Basic ${Buffer.from(`${proxyUrl.username}:${proxyUrl.password}`).toString('base64')}`
 	        })));
 	        this._proxyAgentDispatcher = proxyAgent;
 	        if (usingSsl && this._ignoreSslError) {
@@ -24966,7 +24979,7 @@ function requireSummary () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
 		const os_1 = require$$0;
-		const fs_1 = fs__default;
+		const fs_1 = require$$1__default;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
 		exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
@@ -25272,7 +25285,7 @@ function requirePathUtils () {
 	};
 	Object.defineProperty(pathUtils, "__esModule", { value: true });
 	pathUtils.toPlatformPath = pathUtils.toWin32Path = pathUtils.toPosixPath = void 0;
-	const path = __importStar(require$$1__default);
+	const path = __importStar(require$$1__default$1);
 	/**
 	 * toPosixPath converts the given path to the posix form. On Windows, \\ will be
 	 * replaced with /.
@@ -25358,8 +25371,8 @@ function requireIoUtil () {
 		var _a;
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
-		const fs = __importStar(fs__default);
-		const path = __importStar(require$$1__default);
+		const fs = __importStar(require$$1__default);
+		const path = __importStar(require$$1__default$1);
 		_a = fs.promises
 		// export const {open} = 'fs'
 		, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
@@ -25549,7 +25562,7 @@ function requireIo () {
 	Object.defineProperty(io, "__esModule", { value: true });
 	io.findInPath = io.which = io.mkdirP = io.rmRF = io.mv = io.cp = void 0;
 	const assert_1 = require$$0$3;
-	const path = __importStar(require$$1__default);
+	const path = __importStar(require$$1__default$1);
 	const ioUtil = __importStar(requireIoUtil());
 	/**
 	 * Copies a file or folder.
@@ -25857,7 +25870,7 @@ function requireToolrunner () {
 	const os = __importStar(require$$0);
 	const events = __importStar(require$$4);
 	const child = __importStar(require$$2$2);
-	const path = __importStar(require$$1__default);
+	const path = __importStar(require$$1__default$1);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
 	const timers_1 = require$$6$1;
@@ -26701,7 +26714,7 @@ function requireCore () {
 		const file_command_1 = requireFileCommand();
 		const utils_1 = requireUtils$1();
 		const os = __importStar(require$$0);
-		const path = __importStar(require$$1__default);
+		const path = __importStar(require$$1__default$1);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
 		 * The code to exit an action
@@ -27011,6 +27024,22 @@ function requireCore () {
 }
 
 var coreExports = requireCore();
+
+async function getInputs() {
+    const result = {};
+    const chartPath = coreExports.getInput('path', { required: true }) || '';
+    const allowChartToNotExist = coreExports.getInput('allowChartToNotExist') === 'true';
+    const validateChartYaml = coreExports.getInput('validateChartYaml') === 'true';
+    const requireChangelog = coreExports.getInput('requireChangelog') === 'true';
+    if (chartPath == '') {
+        throw new Error('path input is required!');
+    }
+    result.path = chartPath;
+    result.allowChartToNotExist = allowChartToNotExist;
+    result.validateChartYaml = validateChartYaml;
+    result.requireChangelog = requireChangelog;
+    return result;
+}
 
 const ALIAS = Symbol.for('yaml.alias');
 const DOC = Symbol.for('yaml.document');
@@ -38256,99 +38285,117 @@ var z = /*#__PURE__*/Object.freeze({
     ZodError: ZodError
 });
 
-const chartSchema = z.object({
-    name: z.string().nonempty(),
-    version: z.string().nonempty(),
-    type: z.enum(["application", "library"]).optional(),
-});
-const chartSchemaChangelogExtension = chartSchema.extend({
-    annotations: z.object({
-        "artifacthub.io/changes": z.string().nonempty(),
-    }).required()
-});
-const changelogSchema = z.array(z.object({
-    kind: z.enum(["added", "changed", "deprecated", "removed", "fixed", "security"]),
-    description: z.string().nonempty(),
-    links: z.array(z.object({
-        name: z.string().nonempty(),
-        url: z.string().url().nonempty(),
-    }).required()).optional(),
-}));
-function getChartYamlFromFile(path) {
-    // Ensure that the file exists.
-    if (!(fs.existsSync(path))) {
-        throw new Error(`${path} does not exist!`);
+class HelmChart {
+    name;
+    version;
+    type;
+    annotations;
+    changelog;
+    constructor(name, version, type, annotations) {
+        this.name = name;
+        this.version = version;
+        this.type = type || 'application';
+        this.annotations = annotations;
+        this.changelog = [];
+        if (annotations != undefined && 'artifacthub.io/changes' in annotations) {
+            this.changelog =
+                parse(annotations['artifacthub.io/changes']) || [];
+        }
+        console.log(this);
     }
-    const chartYamlFile = fs.readFileSync(path, "utf8");
-    return parse(chartYamlFile);
-}
-function setOutput(key, value) {
-    coreExports.debug(`output ${key}: ${value}`);
-    coreExports.setOutput(key, value);
-}
-function ValidateObject(schema, object) {
-    const result = schema.safeParse(object);
-    if (!result.success) {
-        result.error.issues.forEach(function (error) {
-            coreExports.error(`${error.path.filter((obj) => { return typeof obj === "string"; }).join('.')}: ${error.message}`);
+    static loadFromYaml(yamlString) {
+        const data = parse(yamlString);
+        return new HelmChart(data.name, data.version, data.type, data.annotations);
+    }
+    static loadFromYamlFile(filePath) {
+        const fileContent = require$$1.readFileSync(filePath, 'utf8');
+        return this.loadFromYaml(fileContent);
+    }
+    validate(requireChangelog) {
+        let schema = z.object({
+            name: z.string().nonempty(),
+            version: z.string().nonempty(),
+            type: z.enum(['application', 'library']).optional()
         });
-        return false;
+        if (requireChangelog) {
+            schema = schema.extend({
+                annotations: z
+                    .object({
+                    'artifacthub.io/changes': z.string().nonempty()
+                })
+                    .required()
+            });
+            schema = schema.extend({
+                changelog: z.array(z.object({
+                    kind: z.enum([
+                        'added',
+                        'changed',
+                        'deprecated',
+                        'removed',
+                        'fixed',
+                        'security'
+                    ]),
+                    description: z.string().nonempty(),
+                    links: z
+                        .array(z
+                        .object({
+                        name: z.string().nonempty(),
+                        url: z.string().url().nonempty()
+                    })
+                        .required())
+                        .optional()
+                }))
+            });
+        }
+        let output = {};
+        let errors = [];
+        const result = schema.safeParse(this);
+        output.success = result.success;
+        result.error?.issues.forEach(function (error) {
+            // errors.push(`${error.path.filter((obj) => {return typeof obj === "string"}).join('.')}: ${error.message}`)
+            errors.push(`${error.path.join('.')}: ${error.message}`);
+        });
+        output.errors = errors;
+        return output;
     }
-    return true;
 }
+
 async function run() {
     try {
-        const chartPath = coreExports.getInput("path", { required: true });
-        const allowChartToNotExist = coreExports.getInput("allowChartToNotExist") === "true";
-        const validateChartYaml = coreExports.getInput("validateChartYaml") === "true";
-        const requireChangelog = coreExports.getInput("requireChangelog") === "true";
-        if (!(fs.existsSync(chartPath))) {
-            if (!allowChartToNotExist) {
-                coreExports.setFailed(`${chartPath} does not exist!`);
-            }
-            return;
-        }
-        const chartYamlPath = require$$1.join(chartPath, "Chart.yaml");
-        coreExports.info(`Processing chart at ${chartYamlPath}`);
-        const chartYaml = getChartYamlFromFile(chartYamlPath);
-        let chartSchemaValidator = chartSchema;
-        if (requireChangelog) {
-            chartSchemaValidator = chartSchemaChangelogExtension;
-        }
-        if (validateChartYaml && !ValidateObject(chartSchemaValidator, chartYaml)) {
-            coreExports.setFailed("Chart.yaml validation failed");
-            return;
-        }
-        let chartName = chartYaml.name;
-        let chartVersion = chartYaml.version;
-        let chartType = chartYaml.type || 'application';
-        let chartChanges = "";
-        if ('artifacthub.io/changes' in chartYaml.annotations) {
-            chartChanges = parse(chartYaml.annotations['artifacthub.io/changes'] || '[]');
-            if (validateChartYaml && !ValidateObject(changelogSchema, chartChanges)) {
-                coreExports.setFailed("Chart changelog validation failed");
+        const inputs = await getInputs();
+        if (!require$$1.existsSync(inputs.path)) {
+            if (!inputs.allowChartToNotExist) {
+                coreExports.setFailed(`${inputs.path} does not exist!`);
                 return;
             }
-            // Sanitize the chart changes to remove newlines.
-            chartChanges = JSON.stringify(chartChanges).replaceAll('\\n', ' ');
+            coreExports.warning(`${inputs.path} does not exist!`);
+            return;
         }
-        setOutput('name', chartName);
-        setOutput('version', chartVersion);
-        setOutput('type', chartType);
-        setOutput('changes', chartChanges);
+        const chartYamlPath = require$$1$1.join(inputs.path, 'Chart.yaml');
+        coreExports.info(`Processing chart at ${chartYamlPath}`);
+        const chart = HelmChart.loadFromYamlFile(chartYamlPath);
+        if (inputs.validateChartYaml) {
+            let result = chart.validate(inputs.requireChangelog);
+            if (!result.success) {
+                coreExports.setFailed('Chart.yaml validation failed');
+                result.errors?.forEach(function (error) {
+                    coreExports.error(error);
+                });
+                return;
+            }
+        }
+        coreExports.setOutput('name', chart.name);
+        coreExports.setOutput('version', chart.version);
+        coreExports.setOutput('type', chart.type);
+        coreExports.setOutput('changes', chart.changelog.length > 0
+            ? JSON.stringify(chart.changelog).replaceAll('\\n', ' ')
+            : '');
     }
     catch (error) {
-        coreExports.setFailed(String(error));
+        if (error instanceof Error)
+            coreExports.setFailed(error.message);
     }
 }
-async function runWrapper() {
-    try {
-        await run();
-    }
-    catch (error) {
-        coreExports.setFailed(`fetch-chart-details action failed: ${error}`);
-        console.log(error);
-    }
-}
-void runWrapper();
+
+export { run };
 //# sourceMappingURL=get-chart-details.js.map

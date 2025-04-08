@@ -1,28 +1,24 @@
 {
   extends: [
-    "github>bjw-s/renovate-config",
-    "github>bjw-s/renovate-config:automerge-github-actions",
+    'github>bjw-s/renovate-config',
+    'github>bjw-s/renovate-config:automerge-github-actions'
   ],
-  ignorePaths: [".archive/**"],
   packageRules: [
     {
-      description: "rollup",
-      groupName: "rollup",
-      matchPackageNames: [
-        "@rollup/rollup-linux-x64-gnu",
-        "rollup"
-      ],
-      matchDatasources: ["npm"],
+      description: 'rollup',
+      groupName: 'rollup',
+      matchPackageNames: ['@rollup/rollup-linux-x64-gnu', 'rollup'],
+      matchDatasources: ['npm'],
       group: {
-        commitMessageTopic: "{{{groupName}}} group",
-        commitMessageSuffix: ""
-      },
+        commitMessageTopic: '{{{groupName}}} group',
+        commitMessageSuffix: ''
+      }
     },
     {
-      description: "Auto merge npm patches",
-      matchDatasources: ["npm"],
+      description: 'Auto merge npm patches',
+      matchDatasources: ['npm'],
       automerge: true,
-      matchUpdateTypes: ["patch"]
+      matchUpdateTypes: ['patch']
     }
   ]
 }
