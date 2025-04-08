@@ -1,9 +1,9 @@
-import * as fs from '../../__fixtures__/fs.js'
-import * as YAML from '../../__fixtures__/yaml.js'
+import fs from 'fs'
+import yaml from 'yaml'
+// import * as YAML from '../../__fixtures__/yaml.js'
 import { jest } from '@jest/globals'
 
-jest.unstable_mockModule('fs', () => fs)
-jest.unstable_mockModule('yaml', () => YAML)
+// jest.unstable_mockModule('yaml', () => YAML)
 
 const { HelmChart } = await import('../../src/get-chart-details/helmchart.js')
 
@@ -35,7 +35,7 @@ describe('HelmChart', () => {
       }
 
       const mockChangelog = [{ kind: 'added', description: 'New feature' }]
-      YAML.parse.mockReturnValueOnce(mockChangelog)
+      jest.spyOn(yaml, 'parse').mockReturnValueOnce(mockChangelog)
 
       const chart = new HelmChart(
         'test-chart',
@@ -45,7 +45,7 @@ describe('HelmChart', () => {
       )
 
       expect(chart.changelog).toEqual(mockChangelog)
-      expect(YAML.parse).toHaveBeenCalledWith(
+      expect(yaml.parse).toHaveBeenCalledWith(
         annotations['artifacthub.io/changes']
       )
     })
@@ -109,11 +109,11 @@ describe('HelmChart', () => {
         annotations: { test: 'value' }
       }
 
-      YAML.parse.mockReturnValueOnce(mockParsedYaml)
+      jest.spyOn(yaml, 'parse').mockReturnValueOnce(mockParsedYaml)
 
       const chart = HelmChart.loadFromYaml(yamlString)
 
-      expect(YAML.parse).toHaveBeenCalledWith(yamlString)
+      expect(yaml.parse).toHaveBeenCalledWith(yamlString)
       expect(chart).toBeInstanceOf(HelmChart)
       expect(chart.name).toBe('test-chart')
       expect(chart.version).toBe('2.0.0')
@@ -133,7 +133,7 @@ describe('HelmChart', () => {
         annotations: {}
       }
 
-      YAML.parse.mockReturnValueOnce(mockParsedYaml)
+      jest.spyOn(yaml, 'parse').mockReturnValueOnce(mockParsedYaml)
 
       const chart = HelmChart.loadFromYaml(yamlString)
 
@@ -158,13 +158,13 @@ describe('HelmChart', () => {
       }
 
       // Mock the file read
-      fs.readFileSync.mockReturnValueOnce(yamlContent)
-      YAML.parse.mockReturnValueOnce(mockParsedYaml)
+      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(yamlContent)
+      jest.spyOn(yaml, 'parse').mockReturnValueOnce(mockParsedYaml)
 
       const chart = HelmChart.loadFromYamlFile('chart.yaml')
 
       expect(fs.readFileSync).toHaveBeenCalledWith('chart.yaml', 'utf8')
-      expect(YAML.parse).toHaveBeenCalledWith(yamlContent)
+      expect(yaml.parse).toHaveBeenCalledWith(yamlContent)
       expect(chart).toBeInstanceOf(HelmChart)
       expect(chart.name).toBe('test-chart')
       expect(chart.version).toBe('2.0.0')
@@ -173,7 +173,7 @@ describe('HelmChart', () => {
     })
 
     it('should throw error when file cannot be read', () => {
-      fs.readFileSync.mockImplementationOnce(() => {
+      jest.spyOn(fs, 'readFileSync').mockImplementationOnce(() => {
         throw new Error('File not found')
       })
 
@@ -239,9 +239,6 @@ describe('HelmChart', () => {
         )
         const result = chart.validate(true)
 
-        console.log(chart)
-        console.log(result)
-
         expect(result.success).toBe(true)
         expect(result.errors).toHaveLength(0)
       })
@@ -260,7 +257,9 @@ describe('HelmChart', () => {
         const annotations = {
           'artifacthub.io/changes': '- invalid: changelog'
         }
-        YAML.parse.mockReturnValueOnce([{ invalid: 'changelog' }])
+        jest
+          .spyOn(yaml, 'parse')
+          .mockReturnValueOnce([{ invalid: 'changelog' }])
         const chart = new HelmChart(
           'test-chart',
           '1.0.0',
@@ -304,7 +303,9 @@ describe('HelmChart', () => {
             - kind: invalid
               description: ''`
         }
-        YAML.parse.mockReturnValueOnce([{ kind: 'invalid', description: '' }])
+        jest
+          .spyOn(yaml, 'parse')
+          .mockReturnValueOnce([{ kind: 'invalid', description: '' }])
         const chart = new HelmChart(
           'test-chart',
           '1.0.0',

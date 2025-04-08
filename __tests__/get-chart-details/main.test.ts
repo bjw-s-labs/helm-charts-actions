@@ -1,5 +1,5 @@
 import * as core from '../../__fixtures__/core.js'
-import * as fs from '../../__fixtures__/fs.js'
+import fs from 'fs'
 import * as inputHelper from '../../__fixtures__/get-chart-details/inputs-helper.js'
 import {
   HelmChart,
@@ -9,7 +9,6 @@ import { ActionInputs } from '../../src/get-chart-details/action-inputs.js'
 import { jest } from '@jest/globals'
 
 jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('fs', () => fs)
 jest.unstable_mockModule(
   '../../src/get-chart-details/inputs-helper.js',
   () => inputHelper

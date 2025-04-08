@@ -4,7 +4,7 @@ import typescript from '@rollup/plugin-typescript'
 
 const config = [
   {
-    input: 'src/dereference-json-schema.ts',
+    input: 'src/dereference-json-schema/main.ts',
     output: {
       esModule: true,
       file: 'dist/dereference-json-schema.js',

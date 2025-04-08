@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as YAML from 'yaml'
+import fs from 'fs'
+import yaml from 'yaml'
 import { z } from 'zod'
 
 export interface HelmChartValidationResult {
@@ -28,12 +28,12 @@ export class HelmChart {
     this.changelog = []
     if (annotations != undefined && 'artifacthub.io/changes' in annotations) {
       this.changelog =
-        YAML.parse(annotations['artifacthub.io/changes'] as string) || []
+        yaml.parse(annotations['artifacthub.io/changes'] as string) || []
     }
   }
 
   static loadFromYaml(yamlString: string): HelmChart {
-    const data = YAML.parse(yamlString)
+    const data = yaml.parse(yamlString)
     return new HelmChart(data.name, data.version, data.type, data.annotations)
   }
 
