@@ -2,23 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "get-chart-details",
+      "name": "Debug get-chart-details",
       "type": "node",
       "request": "launch",
-      "program": "./src/get-chart-details.ts",
-      "runtimeExecutable": "tsx",
+      "runtimeExecutable": "npx",
       "cwd": "${workspaceRoot}",
-      "skipFiles": [
-        "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**",
+      "args": [
+        "@github/local-action",
+        "get-chart-details",
+        "../src/get-chart-details/main.ts",
+        ".env"
       ],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "env": {
-        "INPUT_PATH": "",
-        "INPUT_VALIDATECHARTYAML": "true",
-        "INPUT_REQUIRECHANGELOG": "true",
-      }
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
     }
   ]
 }
