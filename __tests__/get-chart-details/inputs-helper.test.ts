@@ -14,7 +14,7 @@ describe('inputs', () => {
   })
 
   it('throws an error when required inputs are not set', async () => {
-    expect(getInputs()).rejects.toThrow('path input is required!')
+    await expect(getInputs()).rejects.toThrow('path input is required!')
   })
 
   it('sets defaults', async () => {

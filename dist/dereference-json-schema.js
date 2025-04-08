@@ -37640,7 +37640,7 @@ async function run() {
             }
             return;
         }
-        let schema = await $RefParser.dereference(schemaFile);
+        const schema = await $RefParser.dereference(schemaFile);
         await libExports$1.writeFile(outputFile, JSON.stringify(schema, null, 2), 'utf8');
         coreExports.info(`Dereferenced JSON schema file to ${outputFile}.`);
     }

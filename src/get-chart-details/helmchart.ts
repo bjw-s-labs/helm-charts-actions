@@ -82,8 +82,8 @@ export class HelmChart {
         )
       })
     }
-    let output = {} as HelmChartValidationResult
-    let errors = [] as string[]
+    const output = {} as HelmChartValidationResult
+    const errors = [] as string[]
 
     const result = schema.safeParse(this)
 

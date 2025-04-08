@@ -38361,8 +38361,8 @@ class HelmChart {
                 }))
             });
         }
-        let output = {};
-        let errors = [];
+        const output = {};
+        const errors = [];
         const result = schema.safeParse(this);
         output.success = result.success;
         result.error?.issues.forEach(function (error) {
@@ -38389,7 +38389,7 @@ async function run() {
         coreExports.info(`Processing chart at ${chartYamlPath}`);
         const chart = HelmChart.loadFromYamlFile(chartYamlPath);
         if (inputs.validateChartYaml) {
-            let result = chart.validate(inputs.requireChangelog);
+            const result = chart.validate(inputs.requireChangelog);
             if (!result.success) {
                 coreExports.setFailed('Chart.yaml validation failed');
                 result.errors?.forEach(function (error) {

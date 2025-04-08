@@ -22,7 +22,7 @@ export async function run() {
 
     const chart = HelmChart.loadFromYamlFile(chartYamlPath)
     if (inputs.validateChartYaml) {
-      let result = chart.validate(inputs.requireChangelog)
+      const result = chart.validate(inputs.requireChangelog)
       if (!result.success) {
         core.setFailed('Chart.yaml validation failed')
         result.errors?.forEach(function (error) {
