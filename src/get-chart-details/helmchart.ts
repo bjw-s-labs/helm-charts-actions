@@ -30,8 +30,6 @@ export class HelmChart {
       this.changelog =
         YAML.parse(annotations['artifacthub.io/changes'] as string) || []
     }
-
-    console.log(this)
   }
 
   static loadFromYaml(yamlString: string): HelmChart {
