@@ -34649,11 +34649,7 @@ function requireDereference () {
 	        value: obj,
 	        circular: false,
 	    };
-	    if (options && options.timeoutMs) {
-	        if (Date.now() - startTime > options.timeoutMs) {
-	            throw new errors_1.TimeoutError(options.timeoutMs);
-	        }
-	    }
+	    checkDereferenceTimeout(startTime, options);
 	    const derefOptions = (options.dereference || {});
 	    const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 	    if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
@@ -34667,6 +34663,7 @@ function requireDereference () {
 	            }
 	            else {
 	                for (const key of Object.keys(obj)) {
+	                    checkDereferenceTimeout(startTime, options);
 	                    const keyPath = pointer_js_1.default.join(path, key);
 	                    const keyPathFromRoot = pointer_js_1.default.join(pathFromRoot, key);
 	                    if (isExcludedPath(keyPathFromRoot)) {
@@ -34744,22 +34741,49 @@ function requireDereference () {
 	    const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
 	    const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
 	    const cache = dereferencedCache.get($refPath);
-	    if (cache && !cache.circular) {
-	        const refKeys = Object.keys($ref);
-	        if (refKeys.length > 1) {
-	            const extraKeys = {};
-	            for (const key of refKeys) {
-	                if (key !== "$ref" && !(key in cache.value)) {
-	                    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-	                    extraKeys[key] = $ref[key];
+	    if (cache) {
+	        // If the object we found is circular we can immediately return it because it would have been
+	        // cached with everything we need already and we don't need to re-process anything inside it.
+	        //
+	        // If the cached object however is _not_ circular and there are additional keys alongside our
+	        // `$ref` pointer here we should merge them back in and return that.
+	        if (!cache.circular) {
+	            const refKeys = Object.keys($ref);
+	            if (refKeys.length > 1) {
+	                const extraKeys = {};
+	                for (const key of refKeys) {
+	                    if (key !== "$ref" && !(key in cache.value)) {
+	                        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+	                        extraKeys[key] = $ref[key];
+	                    }
 	                }
+	                return {
+	                    circular: cache.circular,
+	                    value: Object.assign({}, cache.value, extraKeys),
+	                };
 	            }
-	            return {
-	                circular: cache.circular,
-	                value: Object.assign({}, cache.value, extraKeys),
-	            };
+	            return cache;
 	        }
-	        return cache;
+	        // If both our cached value and our incoming `$ref` are the same then we can return what we
+	        // got out of the cache, otherwise we should re-process this value. We need to do this because
+	        // the current dereference caching mechanism doesn't take into account that `$ref` are neither
+	        // unique or reference the same file.
+	        //
+	        // For example if `schema.yaml` references `definitions/child.yaml` and
+	        // `definitions/parent.yaml` references `child.yaml` then `$ref: 'child.yaml'` may get cached
+	        // for `definitions/child.yaml`, resulting in `schema.yaml` being having an invalid reference
+	        // to `child.yaml`.
+	        //
+	        // This check is not perfect and the design of the dereference caching mechanism needs a total
+	        // overhaul.
+	        if (typeof cache.value === 'object' && '$ref' in cache.value && '$ref' in $ref) {
+	            if (cache.value.$ref === $ref.$ref) {
+	                return cache;
+	            }
+	        }
+	        else {
+	            return cache;
+	        }
 	    }
 	    const pointer = $refs._resolve($refPath, path, options);
 	    if (pointer === null) {
@@ -34801,6 +34825,19 @@ function requireDereference () {
 	        dereferencedCache.set($refPath, dereferencedObject);
 	    }
 	    return dereferencedObject;
+	}
+	/**
+	 * Check if we've run past our allowed timeout and throw an error if we have.
+	 *
+	 * @param startTime - The time when the dereferencing started.
+	 * @param options
+	 */
+	function checkDereferenceTimeout(startTime, options) {
+	    if (options && options.timeoutMs) {
+	        if (Date.now() - startTime > options.timeoutMs) {
+	            throw new errors_1.TimeoutError(options.timeoutMs);
+	        }
+	    }
 	}
 	/**
 	 * Called when a circular reference is found.
