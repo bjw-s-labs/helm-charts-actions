@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "1.2.8",
-    "@github/local-action": "3.2.0",
+    "@github/local-action": "3.2.1",
     "@rollup/plugin-commonjs": "28.0.3",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-typescript": "12.1.2",
