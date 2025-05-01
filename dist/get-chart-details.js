@@ -39174,40 +39174,36 @@ class HelmChart {
 }
 
 async function run() {
-    try {
-        const inputs = await getInputs();
-        if (!require$$1$1.existsSync(inputs.path)) {
-            if (!inputs.allowChartToNotExist) {
-                coreExports.setFailed(`${inputs.path} does not exist!`);
-                return;
-            }
-            coreExports.warning(`${inputs.path} does not exist!`);
+    coreExports.info(`Starting action`);
+    const inputs = await getInputs();
+    coreExports.info(`inputs: ${JSON.stringify(inputs)}`);
+    if (!require$$1$1.existsSync(inputs.path)) {
+        if (!inputs.allowChartToNotExist) {
+            coreExports.setFailed(`${inputs.path} does not exist!`);
             return;
         }
-        const chartYamlPath = require$$1.join(inputs.path, 'Chart.yaml');
-        coreExports.info(`Processing chart at ${chartYamlPath}`);
-        const chart = HelmChart.loadFromYamlFile(chartYamlPath);
-        if (inputs.validateChartYaml) {
-            const result = chart.validate(inputs.requireChangelog);
-            if (!result.success) {
-                coreExports.setFailed('Chart.yaml validation failed');
-                result.errors?.forEach(function (error) {
-                    coreExports.error(error);
-                });
-                return;
-            }
+        coreExports.warning(`${inputs.path} does not exist!`);
+        return;
+    }
+    const chartYamlPath = require$$1.join(inputs.path, 'Chart.yaml');
+    coreExports.info(`Processing chart at ${chartYamlPath}`);
+    const chart = HelmChart.loadFromYamlFile(chartYamlPath);
+    if (inputs.validateChartYaml) {
+        const result = chart.validate(inputs.requireChangelog);
+        if (!result.success) {
+            coreExports.setFailed('Chart.yaml validation failed');
+            result.errors?.forEach(function (error) {
+                coreExports.error(error);
+            });
+            return;
         }
-        coreExports.setOutput('name', chart.name);
-        coreExports.setOutput('version', chart.version);
-        coreExports.setOutput('type', chart.type);
-        coreExports.setOutput('changes', chart.changelog.length > 0
-            ? JSON.stringify(chart.changelog).replaceAll('\\n', ' ')
-            : '');
     }
-    catch (error) {
-        if (error instanceof Error)
-            coreExports.setFailed(error.message);
-    }
+    coreExports.setOutput('name', chart.name);
+    coreExports.setOutput('version', chart.version);
+    coreExports.setOutput('type', chart.type);
+    coreExports.setOutput('changes', chart.changelog.length > 0
+        ? JSON.stringify(chart.changelog).replaceAll('\\n', ' ')
+        : '');
 }
 
 export { run };
