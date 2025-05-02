@@ -4,7 +4,7 @@ import typescript from '@rollup/plugin-typescript'
 
 const config = [
   {
-    input: 'src/dereference-json-schema/main.ts',
+    input: 'src/dereference-json-schema/index.ts',
     output: {
       esModule: true,
       file: 'dist/dereference-json-schema.js',
@@ -14,7 +14,7 @@ const config = [
     plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
   },
   {
-    input: 'src/get-chart-details/main.ts',
+    input: 'src/get-chart-details/index.ts',
     output: {
       esModule: true,
       file: 'dist/get-chart-details.js',

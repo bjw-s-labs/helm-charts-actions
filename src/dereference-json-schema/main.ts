@@ -3,7 +3,7 @@ import fs from 'fs'
 import * as inputHelper from './inputs-helper.js'
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 
-export async function run() {
+export async function run(): Promise<void> {
   try {
     const inputs = await inputHelper.getInputs()
 

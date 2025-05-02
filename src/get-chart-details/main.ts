@@ -4,7 +4,7 @@ import fs from 'fs'
 import * as inputHelper from './inputs-helper.js'
 import { HelmChart } from './helmchart.js'
 
-export async function run() {
+export async function run(): Promise<void> {
   try {
     const inputs = await inputHelper.getInputs()
 
