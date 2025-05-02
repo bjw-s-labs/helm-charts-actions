@@ -39174,9 +39174,7 @@ class HelmChart {
 }
 
 async function run() {
-    coreExports.info(`Starting action`);
     const inputs = await getInputs();
-    coreExports.info(`inputs: ${JSON.stringify(inputs)}`);
     if (!require$$1$1.existsSync(inputs.path)) {
         if (!inputs.allowChartToNotExist) {
             coreExports.setFailed(`${inputs.path} does not exist!`);

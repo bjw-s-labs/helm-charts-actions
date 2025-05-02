@@ -5,11 +5,7 @@ import * as inputHelper from './inputs-helper.js'
 import { HelmChart } from './helmchart.js'
 
 export async function run(): Promise<void> {
-  core.info(`Starting action`)
-
   const inputs = await inputHelper.getInputs()
-
-  core.info(`inputs: ${JSON.stringify(inputs)}`)
 
   if (!fs.existsSync(inputs.path)) {
     if (!inputs.allowChartToNotExist) {
