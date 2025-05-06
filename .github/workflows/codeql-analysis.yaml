@@ -1,5 +1,6 @@
 ---
-name: CodeQL
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: CodeQL check
 
 on:
   workflow_dispatch:
@@ -10,7 +11,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '31 7 * * 3'
+    - cron: '30 6 * * *'
 
 permissions:
   contents: read
