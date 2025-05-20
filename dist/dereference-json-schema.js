@@ -28237,7 +28237,7 @@ function requirePointer () {
 		const ref_js_1 = __importDefault(requireRef());
 		const url = __importStar(requireUrl());
 		const errors_js_1 = requireErrors();
-		exports.nullSymbol = Symbol('null');
+		exports.nullSymbol = Symbol("null");
 		const slashes = /\//g;
 		const tildes = /~/g;
 		const escapedSlash = /~1/g;
@@ -28289,9 +28289,6 @@ function requirePointer () {
 		            if (resolveIf$Ref(this, options, pathFromRoot)) {
 		                // The $ref path has changed, so append the remaining tokens to the path
 		                this.path = Pointer.join(this.path, tokens.slice(i));
-		            }
-		            if (typeof this.value === "object" && this.value !== null && !isRootPath(pathFromRoot) && "$ref" in this.value) {
-		                return this;
 		            }
 		            const token = tokens[i];
 		            if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
@@ -34351,10 +34348,10 @@ function requireBundle () {
 	            const keys = Object.keys(obj).sort((a, b) => {
 	                // Most people will expect references to be bundled into the the "definitions" property,
 	                // so we always crawl that property first, if it exists.
-	                if (a === "definitions") {
+	                if (a === "definitions" || a === "$defs") {
 	                    return -1;
 	                }
-	                else if (b === "definitions") {
+	                else if (b === "definitions" || b === "$defs") {
 	                    return 1;
 	                }
 	                else {
@@ -34485,8 +34482,8 @@ function requireBundle () {
 	        else {
 	            // Determine how far each $ref is from the "definitions" property.
 	            // Most people will expect references to be bundled into the the "definitions" property if possible.
-	            const aDefinitionsIndex = a.pathFromRoot.lastIndexOf("/definitions");
-	            const bDefinitionsIndex = b.pathFromRoot.lastIndexOf("/definitions");
+	            const aDefinitionsIndex = Math.max(a.pathFromRoot.lastIndexOf("/definitions"), a.pathFromRoot.lastIndexOf("/$defs"));
+	            const bDefinitionsIndex = Math.max(b.pathFromRoot.lastIndexOf("/definitions"), b.pathFromRoot.lastIndexOf("/$defs"));
 	            if (aDefinitionsIndex !== bDefinitionsIndex) {
 	                // Give higher priority to the $ref that's closer to the "definitions" property
 	                return bDefinitionsIndex - aDefinitionsIndex;
@@ -34776,7 +34773,7 @@ function requireDereference () {
 	        //
 	        // This check is not perfect and the design of the dereference caching mechanism needs a total
 	        // overhaul.
-	        if (typeof cache.value === 'object' && '$ref' in cache.value && '$ref' in $ref) {
+	        if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
 	            if (cache.value.$ref === $ref.$ref) {
 	                return cache;
 	            }
