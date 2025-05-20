@@ -22,12 +22,8 @@
     }
   ],
   postUpgradeTasks: {
-    commands: [
-      'npm run bundle',
-    ],
-    fileFilters: [
-      'dist/*',
-    ],
-    executionMode: 'update',
-  },
+    commands: ['npm run bundle'],
+    fileFilters: ['dist/*'],
+    executionMode: 'update'
+  }
 }
