@@ -20,5 +20,14 @@
       automerge: true,
       matchUpdateTypes: ['patch']
     }
-  ]
+  ],
+  postUpgradeTasks: {
+    commands: [
+      'npm run bundle',
+    ],
+    fileFilters: [
+      'dist/*',
+    ],
+    executionMode: 'update',
+  },
 }
