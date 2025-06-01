@@ -35190,18 +35190,6 @@ var errorUtil;
     errorUtil.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil || (errorUtil = {}));
 
-var __classPrivateFieldGet = (undefined && undefined.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var __classPrivateFieldSet = (undefined && undefined.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var _ZodEnum_cache, _ZodNativeEnum_cache;
 class ParseInputLazyPath {
     constructor(parent, value, path, key) {
         this._cachedPath = [];
@@ -37925,10 +37913,6 @@ function createZodEnum(values, params) {
     });
 }
 class ZodEnum extends ZodType {
-    constructor() {
-        super(...arguments);
-        _ZodEnum_cache.set(this, void 0);
-    }
     _parse(input) {
         if (typeof input.data !== "string") {
             const ctx = this._getOrReturnCtx(input);
@@ -37940,10 +37924,10 @@ class ZodEnum extends ZodType {
             });
             return INVALID;
         }
-        if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f")) {
-            __classPrivateFieldSet(this, _ZodEnum_cache, new Set(this._def.values), "f");
+        if (!this._cache) {
+            this._cache = new Set(this._def.values);
         }
-        if (!__classPrivateFieldGet(this, _ZodEnum_cache, "f").has(input.data)) {
+        if (!this._cache.has(input.data)) {
             const ctx = this._getOrReturnCtx(input);
             const expectedValues = this._def.values;
             addIssueToContext(ctx, {
@@ -37992,13 +37976,8 @@ class ZodEnum extends ZodType {
         });
     }
 }
-_ZodEnum_cache = new WeakMap();
 ZodEnum.create = createZodEnum;
 class ZodNativeEnum extends ZodType {
-    constructor() {
-        super(...arguments);
-        _ZodNativeEnum_cache.set(this, void 0);
-    }
     _parse(input) {
         const nativeEnumValues = util.getValidEnumValues(this._def.values);
         const ctx = this._getOrReturnCtx(input);
@@ -38011,10 +37990,10 @@ class ZodNativeEnum extends ZodType {
             });
             return INVALID;
         }
-        if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f")) {
-            __classPrivateFieldSet(this, _ZodNativeEnum_cache, new Set(util.getValidEnumValues(this._def.values)), "f");
+        if (!this._cache) {
+            this._cache = new Set(util.getValidEnumValues(this._def.values));
         }
-        if (!__classPrivateFieldGet(this, _ZodNativeEnum_cache, "f").has(input.data)) {
+        if (!this._cache.has(input.data)) {
             const expectedValues = util.objectValues(nativeEnumValues);
             addIssueToContext(ctx, {
                 received: ctx.data,
@@ -38029,7 +38008,6 @@ class ZodNativeEnum extends ZodType {
         return this._def.values;
     }
 }
-_ZodNativeEnum_cache = new WeakMap();
 ZodNativeEnum.create = (values, params) => {
     return new ZodNativeEnum({
         values: values,
@@ -38176,7 +38154,7 @@ class ZodEffects extends ZodType {
                     parent: ctx,
                 });
                 if (!isValid(base))
-                    return base;
+                    return INVALID;
                 const result = effect.transform(base.value, checkCtx);
                 if (result instanceof Promise) {
                     throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
@@ -38186,7 +38164,7 @@ class ZodEffects extends ZodType {
             else {
                 return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
                     if (!isValid(base))
-                        return base;
+                        return INVALID;
                     return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
                         status: status.value,
                         value: result,
