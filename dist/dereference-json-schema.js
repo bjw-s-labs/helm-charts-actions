@@ -1,5 +1,5 @@
-import require$$0$1 from 'os';
-import require$$0$2 from 'crypto';
+import require$$0 from 'os';
+import require$$0$1 from 'crypto';
 import require$$1 from 'fs';
 import require$$1$5 from 'path';
 import require$$2 from 'http';
@@ -8,11 +8,10 @@ import require$$0$4 from 'net';
 import require$$1$1 from 'tls';
 import require$$4 from 'events';
 import require$$0$3 from 'assert';
-import * as require$$0 from 'util';
-import require$$0__default from 'util';
+import require$$0$2 from 'util';
 import require$$0$5 from 'stream';
 import require$$7 from 'buffer';
-import require$$8$1 from 'querystring';
+import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
 import require$$0$7 from 'node:stream';
 import require$$1$2 from 'node:util';
@@ -33,31 +32,6 @@ var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof win
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-function getAugmentedNamespace(n) {
-  if (Object.prototype.hasOwnProperty.call(n, '__esModule')) return n;
-  var f = n.default;
-	if (typeof f == "function") {
-		var a = function a () {
-			if (this instanceof a) {
-        return Reflect.construct(f, arguments, this.constructor);
-			}
-			return f.apply(this, arguments);
-		};
-		a.prototype = f.prototype;
-  } else a = {};
-  Object.defineProperty(a, '__esModule', {value: true});
-	Object.keys(n).forEach(function (k) {
-		var d = Object.getOwnPropertyDescriptor(n, k);
-		Object.defineProperty(a, k, d.get ? d : {
-			enumerable: true,
-			get: function () {
-				return n[k];
-			}
-		});
-	});
-	return a;
 }
 
 var core$1 = {};
@@ -143,7 +117,7 @@ function requireCommand () {
 	};
 	Object.defineProperty(command, "__esModule", { value: true });
 	command.issue = command.issueCommand = void 0;
-	const os = __importStar(require$$0$1);
+	const os = __importStar(require$$0);
 	const utils_1 = requireUtils$1();
 	/**
 	 * Commands
@@ -251,9 +225,9 @@ function requireFileCommand () {
 	fileCommand.prepareKeyValueMessage = fileCommand.issueFileCommand = void 0;
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	const crypto = __importStar(require$$0$2);
+	const crypto = __importStar(require$$0$1);
 	const fs = __importStar(require$$1);
-	const os = __importStar(require$$0$1);
+	const os = __importStar(require$$0);
 	const utils_1 = requireUtils$1();
 	function issueFileCommand(command, message) {
 	    const filePath = process.env[`GITHUB_${command}`];
@@ -406,7 +380,7 @@ function requireTunnel$1 () {
 	var http = require$$2;
 	var https = require$$3;
 	var events = require$$4;
-	var util = require$$0__default;
+	var util = require$$0$2;
 
 
 	tunnel$1.httpOverHttp = httpOverHttp;
@@ -1127,8 +1101,8 @@ function requireUtil$6 () {
 	const net = require$$0$4;
 	const { InvalidArgumentError } = requireErrors$1();
 	const { Blob } = require$$7;
-	const nodeUtil = require$$0__default;
-	const { stringify } = require$$8$1;
+	const nodeUtil = require$$0$2;
+	const { stringify } = require$$8;
 	const { headerNameLowerCasedRecord } = requireConstants$4();
 
 	const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(v => Number(v));
@@ -4758,7 +4732,7 @@ function requireWebidl () {
 	if (hasRequiredWebidl) return webidl_1;
 	hasRequiredWebidl = 1;
 
-	const { types } = require$$0__default;
+	const { types } = require$$0$2;
 	const { hasOwn, toUSVString } = requireUtil$5();
 
 	/** @type {import('../../types/webidl').Webidl} */
@@ -6049,7 +6023,7 @@ function requireFile$1 () {
 	hasRequiredFile$1 = 1;
 
 	const { Blob, File: NativeFile } = require$$7;
-	const { types } = require$$0__default;
+	const { types } = require$$0$2;
 	const { kState } = requireSymbols$3();
 	const { isBlobLike } = requireUtil$5();
 	const { webidl } = requireWebidl();
@@ -13406,7 +13380,7 @@ function requireMockUtils () {
 	  types: {
 	    isPromise
 	  }
-	} = require$$0__default;
+	} = require$$0$2;
 
 	function matchValue (match, value) {
 	  if (typeof match === 'string') {
@@ -13966,7 +13940,7 @@ function requireMockClient () {
 	if (hasRequiredMockClient) return mockClient;
 	hasRequiredMockClient = 1;
 
-	const { promisify } = require$$0__default;
+	const { promisify } = require$$0$2;
 	const Client = requireClient();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14033,7 +14007,7 @@ function requireMockPool () {
 	if (hasRequiredMockPool) return mockPool;
 	hasRequiredMockPool = 1;
 
-	const { promisify } = require$$0__default;
+	const { promisify } = require$$0$2;
 	const Pool = requirePool();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14997,7 +14971,7 @@ function requireHeaders () {
 	  isValidHeaderName,
 	  isValidHeaderValue
 	} = requireUtil$5();
-	const util = require$$0__default;
+	const util = require$$0$2;
 	const { webidl } = requireWebidl();
 	const assert = require$$0$3;
 
@@ -15606,7 +15580,7 @@ function requireResponse () {
 	const { URLSerializer } = requireDataURL();
 	const { kHeadersList, kConstruct } = requireSymbols$4();
 	const assert = require$$0$3;
-	const { types } = require$$0__default;
+	const { types } = require$$0$2;
 
 	const ReadableStream = globalThis.ReadableStream || require$$14.ReadableStream;
 	const textEncoder = new TextEncoder('utf-8');
@@ -19607,7 +19581,7 @@ function requireUtil$3 () {
 	const { getEncoding } = requireEncoding();
 	const { DOMException } = requireConstants$3();
 	const { serializeAMimeType, parseMIMEType } = requireDataURL();
-	const { types } = require$$0__default;
+	const { types } = require$$0$2;
 	const { StringDecoder } = require$$6;
 	const { btoa } = require$$7;
 
@@ -23584,7 +23558,7 @@ function requireWebsocket () {
 	const { ByteParser } = requireReceiver();
 	const { kEnumerableProperty, isBlobLike } = requireUtil$6();
 	const { getGlobalDispatcher } = requireGlobal();
-	const { types } = require$$0__default;
+	const { types } = require$$0$2;
 
 	let experimentalWarned = false;
 
@@ -25229,7 +25203,7 @@ function requireSummary () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
-		const os_1 = require$$0$1;
+		const os_1 = require$$0;
 		const fs_1 = require$$1;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
@@ -26118,7 +26092,7 @@ function requireToolrunner () {
 	};
 	Object.defineProperty(toolrunner, "__esModule", { value: true });
 	toolrunner.argStringToArray = toolrunner.ToolRunner = void 0;
-	const os = __importStar(require$$0$1);
+	const os = __importStar(require$$0);
 	const events = __importStar(require$$4);
 	const child = __importStar(require$$2$2);
 	const path = __importStar(require$$1$5);
@@ -26861,7 +26835,7 @@ function requirePlatform () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getDetails = exports.isLinux = exports.isMacOS = exports.isWindows = exports.arch = exports.platform = void 0;
-		const os_1 = __importDefault(require$$0$1);
+		const os_1 = __importDefault(require$$0);
 		const exec = __importStar(requireExec());
 		const getWindowsInfo = () => __awaiter(void 0, void 0, void 0, function* () {
 		    const { stdout: version } = yield exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
@@ -26964,7 +26938,7 @@ function requireCore$1 () {
 		const command_1 = requireCommand();
 		const file_command_1 = requireFileCommand();
 		const utils_1 = requireUtils$1();
-		const os = __importStar(require$$0$1);
+		const os = __importStar(require$$0);
 		const path = __importStar(require$$1$5);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
@@ -27296,393 +27270,6 @@ async function getInputs() {
 var lib = {};
 
 var refs = {};
-
-const nonJsonTypes = ["function", "symbol", "undefined"];
-const protectedProps$1 = ["constructor", "prototype", "__proto__"];
-const objectPrototype = Object.getPrototypeOf({});
-/**
- * Custom JSON serializer for Error objects.
- * Returns all built-in error properties, as well as extended properties.
- */
-function toJSON() {
-    // HACK: We have to cast the objects to `any` so we can use symbol indexers.
-    // see https://github.com/Microsoft/TypeScript/issues/1863
-    let pojo = {};
-    let error = this;
-    for (let key of getDeepKeys(error)) {
-        if (typeof key === "string") {
-            let value = error[key];
-            let type = typeof value;
-            if (!nonJsonTypes.includes(type)) {
-                pojo[key] = value;
-            }
-        }
-    }
-    return pojo;
-}
-/**
- * Returns own, inherited, enumerable, non-enumerable, string, and symbol keys of `obj`.
- * Does NOT return members of the base Object prototype, or the specified omitted keys.
- */
-function getDeepKeys(obj, omit = []) {
-    let keys = [];
-    // Crawl the prototype chain, finding all the string and symbol keys
-    while (obj && obj !== objectPrototype) {
-        keys = keys.concat(Object.getOwnPropertyNames(obj), Object.getOwnPropertySymbols(obj));
-        obj = Object.getPrototypeOf(obj);
-    }
-    // De-duplicate the list of keys
-    let uniqueKeys = new Set(keys);
-    // Remove any omitted keys
-    for (let key of omit.concat(protectedProps$1)) {
-        uniqueKeys.delete(key);
-    }
-    return uniqueKeys;
-}
-
-// The `inspect()` method is actually a Symbol, not a string key.
-// https://nodejs.org/api/util.html#util_util_inspect_custom
-const inspectMethod = require$$0.inspect.custom || Symbol.for("nodejs.util.inspect.custom");
-/**
- * Ono supports Node's `util.format()` formatting for error messages.
- *
- * @see https://nodejs.org/api/util.html#util_util_format_format_args
- */
-const format = require$$0.format;
-/**
- * Adds an `inspect()` method to support Node's `util.inspect()` function.
- *
- * @see https://nodejs.org/api/util.html#util_util_inspect_custom
- */
-function addInspectMethod(newError) {
-    // @ts-expect-error - TypeScript doesn't support symbol indexers
-    newError[inspectMethod] = inspect;
-}
-/**
- * Returns a representation of the error for Node's `util.inspect()` method.
- *
- * @see https://nodejs.org/api/util.html#util_custom_inspection_functions_on_objects
- */
-function inspect() {
-    // HACK: We have to cast the objects to `any` so we can use symbol indexers.
-    // see https://github.com/Microsoft/TypeScript/issues/1863
-    let pojo = {};
-    let error = this;
-    for (let key of getDeepKeys(error)) {
-        let value = error[key];
-        pojo[key] = value;
-    }
-    // Don't include the `inspect()` method on the output object,
-    // otherwise it will cause `util.inspect()` to go into an infinite loop
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete pojo[inspectMethod];
-    return pojo;
-}
-
-const newline = /\r?\n/;
-const onoCall = /\bono[ @]/;
-/**
- * Is the property lazily computed?
- */
-function isLazyStack(stackProp) {
-    return Boolean(stackProp &&
-        stackProp.configurable &&
-        typeof stackProp.get === "function");
-}
-/**
- * Is the stack property writable?
- */
-function isWritableStack(stackProp) {
-    return Boolean(
-    // If there is no stack property, then it's writable, since assigning it will create it
-    !stackProp ||
-        stackProp.writable ||
-        typeof stackProp.set === "function");
-}
-/**
- * Appends the original `Error.stack` property to the new Error's stack.
- */
-function joinStacks(newError, originalError) {
-    let newStack = popStack(newError.stack);
-    let originalStack = originalError ? originalError.stack : undefined;
-    if (newStack && originalStack) {
-        return newStack + "\n\n" + originalStack;
-    }
-    else {
-        return newStack || originalStack;
-    }
-}
-/**
- * Calls `joinStacks` lazily, when the `Error.stack` property is accessed.
- */
-function lazyJoinStacks(lazyStack, newError, originalError) {
-    if (originalError) {
-        Object.defineProperty(newError, "stack", {
-            get: () => {
-                let newStack = lazyStack.get.apply(newError);
-                return joinStacks({ stack: newStack }, originalError);
-            },
-            enumerable: false,
-            configurable: true
-        });
-    }
-    else {
-        lazyPopStack(newError, lazyStack);
-    }
-}
-/**
- * Removes Ono from the stack, so that the stack starts at the original error location
- */
-function popStack(stack) {
-    if (stack) {
-        let lines = stack.split(newline);
-        // Find the Ono call(s) in the stack, and remove them
-        let onoStart;
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            if (onoCall.test(line)) {
-                if (onoStart === undefined) {
-                    // We found the first Ono call in the stack trace.
-                    // There may be other subsequent Ono calls as well.
-                    onoStart = i;
-                }
-            }
-            else if (onoStart !== undefined) {
-                // We found the first non-Ono call after one or more Ono calls.
-                // So remove the Ono call lines from the stack trace
-                lines.splice(onoStart, i - onoStart);
-                break;
-            }
-        }
-        if (lines.length > 0) {
-            return lines.join("\n");
-        }
-    }
-    // If we get here, then the stack doesn't contain a call to `ono`.
-    // This may be due to minification or some optimization of the JS engine.
-    // So just return the stack as-is.
-    return stack;
-}
-/**
- * Calls `popStack` lazily, when the `Error.stack` property is accessed.
- */
-function lazyPopStack(error, lazyStack) {
-    Object.defineProperty(error, "stack", {
-        get: () => popStack(lazyStack.get.apply(error)),
-        enumerable: false,
-        configurable: true
-    });
-}
-
-const protectedProps = ["name", "message", "stack"];
-/**
- * Extends the new error with the properties of the original error and the `props` object.
- *
- * @param newError - The error object to extend
- * @param originalError - The original error object, if any
- * @param props - Additional properties to add, if any
- */
-function extendError(error, originalError, props) {
-    let onoError = error;
-    extendStack(onoError, originalError);
-    // Copy properties from the original error
-    if (originalError && typeof originalError === "object") {
-        mergeErrors(onoError, originalError);
-    }
-    // The default `toJSON` method doesn't output props like `name`, `message`, `stack`, etc.
-    // So replace it with one that outputs every property of the error.
-    onoError.toJSON = toJSON;
-    // On Node.js, add support for the `util.inspect()` method
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (addInspectMethod) {
-        addInspectMethod(onoError);
-    }
-    // Finally, copy custom properties that were specified by the user.
-    // These props OVERWRITE any previous props
-    if (props && typeof props === "object") {
-        Object.assign(onoError, props);
-    }
-    return onoError;
-}
-/**
- * Extend the error stack to include its cause
- */
-function extendStack(newError, originalError) {
-    let stackProp = Object.getOwnPropertyDescriptor(newError, "stack");
-    if (isLazyStack(stackProp)) {
-        lazyJoinStacks(stackProp, newError, originalError);
-    }
-    else if (isWritableStack(stackProp)) {
-        newError.stack = joinStacks(newError, originalError);
-    }
-}
-/**
- * Merges properties of the original error with the new error.
- *
- * @param newError - The error object to extend
- * @param originalError - The original error object, if any
- */
-function mergeErrors(newError, originalError) {
-    // Get the original error's keys
-    // NOTE: We specifically exclude properties that we have already set on the new error.
-    // This is _especially_ important for the `stack` property, because this property has
-    // a lazy getter in some environments
-    let keys = getDeepKeys(originalError, protectedProps);
-    // HACK: We have to cast the errors to `any` so we can use symbol indexers.
-    // see https://github.com/Microsoft/TypeScript/issues/1863
-    let _newError = newError;
-    let _originalError = originalError;
-    for (let key of keys) {
-        if (_newError[key] === undefined) {
-            try {
-                _newError[key] = _originalError[key];
-            }
-            catch (e) {
-                // This property is read-only, so it can't be copied
-            }
-        }
-    }
-}
-
-/**
- * Normalizes Ono options, accounting for defaults and optional options.
- */
-function normalizeOptions(options) {
-    options = options || {};
-    return {
-        concatMessages: options.concatMessages === undefined ? true : Boolean(options.concatMessages),
-        format: options.format === undefined ? format
-            : (typeof options.format === "function" ? options.format : false),
-    };
-}
-/**
- * Normalizes the Ono arguments, accounting for defaults, options, and optional arguments.
- */
-function normalizeArgs$1(args, options) {
-    let originalError;
-    let props;
-    let formatArgs;
-    let message = "";
-    // Determine which arguments were actually specified
-    if (typeof args[0] === "string") {
-        formatArgs = args;
-    }
-    else if (typeof args[1] === "string") {
-        if (args[0] instanceof Error) {
-            originalError = args[0];
-        }
-        else {
-            props = args[0];
-        }
-        formatArgs = args.slice(1);
-    }
-    else {
-        originalError = args[0];
-        props = args[1];
-        formatArgs = args.slice(2);
-    }
-    // If there are any format arguments, then format the error message
-    if (formatArgs.length > 0) {
-        if (options.format) {
-            message = options.format.apply(undefined, formatArgs);
-        }
-        else {
-            message = formatArgs.join(" ");
-        }
-    }
-    if (options.concatMessages && originalError && originalError.message) {
-        // The inner-error's message will be added to the new message
-        message += (message ? " \n" : "") + originalError.message;
-    }
-    return { originalError, props, message };
-}
-
-const constructor = Ono;
-/**
- * Creates an `Ono` instance for a specifc error type.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function Ono(ErrorConstructor, options) {
-    options = normalizeOptions(options);
-    function ono(...args) {
-        let { originalError, props, message } = normalizeArgs$1(args, options);
-        // Create a new error of the specified type
-        let newError = new ErrorConstructor(message);
-        // Extend the error with the properties of the original error and the `props` object
-        return extendError(newError, originalError, props);
-    }
-    ono[Symbol.species] = ErrorConstructor;
-    return ono;
-}
-/**
- * Returns an object containing all properties of the given Error object,
- * which can be used with `JSON.stringify()`.
- */
-Ono.toJSON = function toJSON$1(error) {
-    return toJSON.call(error);
-};
-/**
- * Extends the given Error object with enhanced Ono functionality, such as nested stack traces,
- * additional properties, and improved support for `JSON.stringify()`.
- */
-Ono.extend = function extend(error, originalError, props) {
-    if (props || originalError instanceof Error) {
-        return extendError(error, originalError, props);
-    }
-    else if (originalError) {
-        return extendError(error, undefined, originalError);
-    }
-    else {
-        return extendError(error);
-    }
-};
-
-const singleton = ono;
-ono.error = new constructor(Error);
-ono.eval = new constructor(EvalError);
-ono.range = new constructor(RangeError);
-ono.reference = new constructor(ReferenceError);
-ono.syntax = new constructor(SyntaxError);
-ono.type = new constructor(TypeError);
-ono.uri = new constructor(URIError);
-const onoMap = ono;
-/**
- * Creates a new error with the specified message, properties, and/or inner error.
- * If an inner error is provided, then the new error will match its type, if possible.
- */
-function ono(...args) {
-    let originalError = args[0];
-    // Is the first argument an Error-like object?
-    if (typeof originalError === "object" && typeof originalError.name === "string") {
-        // Try to find an Ono singleton method that matches this error type
-        for (let typedOno of Object.values(onoMap)) {
-            if (typeof typedOno === "function" && typedOno.name === "ono") {
-                let species = typedOno[Symbol.species];
-                if (species && species !== Error && (originalError instanceof species || originalError.name === species.name)) {
-                    // Create an error of the same type
-                    return typedOno.apply(undefined, args);
-                }
-            }
-        }
-    }
-    // By default, create a base Error object
-    return ono.error.apply(undefined, args);
-}
-
-/* eslint-env commonjs */
-// CommonJS default export hack
-if (typeof module === "object" && typeof module.exports === "object") {
-    module.exports = Object.assign(module.exports.default, module.exports);
-}
-
-var esm = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Ono: constructor,
-	default: singleton,
-	ono: singleton
-});
-
-var require$$8 = /*@__PURE__*/getAugmentedNamespace(esm);
 
 var ref = {};
 
@@ -28074,19 +27661,62 @@ function requireErrors () {
 	hasRequiredErrors = 1;
 	Object.defineProperty(errors, "__esModule", { value: true });
 	errors.InvalidPointerError = errors.TimeoutError = errors.MissingPointerError = errors.UnmatchedResolverError = errors.ResolverError = errors.UnmatchedParserError = errors.ParserError = errors.JSONParserErrorGroup = errors.JSONParserError = void 0;
+	errors.toJSON = toJSON;
+	errors.getDeepKeys = getDeepKeys;
 	errors.isHandledError = isHandledError;
 	errors.normalizeError = normalizeError;
-	const ono_1 = require$$8;
 	const url_js_1 = requireUrl();
+	const nonJsonTypes = ["function", "symbol", "undefined"];
+	const protectedProps = ["constructor", "prototype", "__proto__"];
+	const objectPrototype = Object.getPrototypeOf({});
+	/**
+	 * Custom JSON serializer for Error objects.
+	 * Returns all built-in error properties, as well as extended properties.
+	 */
+	function toJSON() {
+	    // HACK: We have to cast the objects to `any` so we can use symbol indexers.
+	    // see https://github.com/Microsoft/TypeScript/issues/1863
+	    const pojo = {};
+	    const error = this;
+	    for (const key of getDeepKeys(error)) {
+	        if (typeof key === "string") {
+	            const value = error[key];
+	            const type = typeof value;
+	            if (!nonJsonTypes.includes(type)) {
+	                pojo[key] = value;
+	            }
+	        }
+	    }
+	    return pojo;
+	}
+	/**
+	 * Returns own, inherited, enumerable, non-enumerable, string, and symbol keys of `obj`.
+	 * Does NOT return members of the base Object prototype, or the specified omitted keys.
+	 */
+	function getDeepKeys(obj, omit = []) {
+	    let keys = [];
+	    // Crawl the prototype chain, finding all the string and symbol keys
+	    while (obj && obj !== objectPrototype) {
+	        keys = keys.concat(Object.getOwnPropertyNames(obj), Object.getOwnPropertySymbols(obj));
+	        obj = Object.getPrototypeOf(obj);
+	    }
+	    // De-duplicate the list of keys
+	    const uniqueKeys = new Set(keys);
+	    // Remove any omitted keys
+	    for (const key of omit.concat(protectedProps)) {
+	        uniqueKeys.delete(key);
+	    }
+	    return uniqueKeys;
+	}
 	class JSONParserError extends Error {
 	    constructor(message, source) {
 	        super();
+	        this.toJSON = toJSON.bind(this);
 	        this.code = "EUNKNOWN";
 	        this.name = "JSONParserError";
 	        this.message = message;
 	        this.source = source;
 	        this.path = null;
-	        ono_1.Ono.extend(this);
 	    }
 	    get footprint() {
 	        return `${this.path}+${this.source}+${this.code}+${this.message}`;
@@ -28096,10 +27726,10 @@ function requireErrors () {
 	class JSONParserErrorGroup extends Error {
 	    constructor(parser) {
 	        super();
+	        this.toJSON = toJSON.bind(this);
 	        this.files = parser;
 	        this.name = "JSONParserErrorGroup";
 	        this.message = `${this.errors.length} error${this.errors.length > 1 ? "s" : ""} occurred while reading '${(0, url_js_1.toFileSystemPath)(parser.$refs._root$Ref.path)}'`;
-	        ono_1.Ono.extend(this);
 	    }
 	    static getParserErrors(parser) {
 	        const errors = [];
@@ -28835,7 +28465,6 @@ function requireRefs () {
 	    return (mod && mod.__esModule) ? mod : { "default": mod };
 	};
 	Object.defineProperty(refs, "__esModule", { value: true });
-	const ono_1 = require$$8;
 	const ref_js_1 = __importDefault(requireRef());
 	const url = __importStar(requireUrl());
 	const convert_path_to_posix_1 = __importDefault(requireConvertPathToPosix());
@@ -28919,7 +28548,7 @@ function requireRefs () {
 	        const withoutHash = url.stripHash(absPath);
 	        const $ref = this._$refs[withoutHash];
 	        if (!$ref) {
-	            throw (0, ono_1.ono)(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+	            throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
 	        }
 	        $ref.set(absPath, value);
 	    }
@@ -28962,7 +28591,7 @@ function requireRefs () {
 	        const withoutHash = url.stripHash(absPath);
 	        const $ref = this._$refs[withoutHash];
 	        if (!$ref) {
-	            throw (0, ono_1.ono)(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+	            throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
 	        }
 	        return $ref.resolve(absPath, options, path, pathFromRoot);
 	    }
@@ -29214,7 +28843,6 @@ function requireParse () {
 	    };
 	})();
 	Object.defineProperty(parse, "__esModule", { value: true });
-	const ono_1 = require$$8;
 	const url = __importStar(requireUrl());
 	const plugins = __importStar(requirePlugins());
 	const errors_js_1 = requireErrors();
@@ -29284,7 +28912,7 @@ function requireParse () {
 	        }
 	        else if (!err || !("error" in err)) {
 	            // Throw a generic, friendly error.
-	            throw ono_1.ono.syntax(`Unable to resolve $ref pointer "${file.url}"`);
+	            throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`);
 	        }
 	        // Throw the original error, if it's one of our own (user-friendly) errors.
 	        else if (err.error instanceof errors_js_1.ResolverError) {
@@ -29320,7 +28948,7 @@ function requireParse () {
 	    try {
 	        const parser = await plugins.run(parsers, "parse", file, $refs);
 	        if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
-	            throw ono_1.ono.syntax(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
+	            throw new SyntaxError(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
 	        }
 	        else {
 	            return parser;
@@ -29335,7 +28963,7 @@ function requireParse () {
 	            throw err;
 	        }
 	        else if (!err || !("error" in err)) {
-	            throw ono_1.ono.syntax(`Unable to parse ${file.url}`);
+	            throw new SyntaxError(`Unable to parse ${file.url}`);
 	        }
 	        else if (err.error instanceof errors_js_1.ParserError) {
 	            throw err.error;
@@ -33721,7 +33349,6 @@ function requireFile () {
 	};
 	Object.defineProperty(file, "__esModule", { value: true });
 	const fs_1 = __importDefault(require$$1);
-	const ono_1 = require$$8;
 	const url = __importStar(requireUrl());
 	const errors_js_1 = requireErrors();
 	file.default = {
@@ -33746,13 +33373,17 @@ function requireFile () {
 	            path = url.toFileSystemPath(file.url);
 	        }
 	        catch (err) {
-	            throw new errors_js_1.ResolverError(ono_1.ono.uri(err, `Malformed URI: ${file.url}`), file.url);
+	            const e = err;
+	            e.message = `Malformed URI: ${file.url}: ${e.message}`;
+	            throw new errors_js_1.ResolverError(e, file.url);
 	        }
 	        try {
 	            return await fs_1.default.promises.readFile(path);
 	        }
 	        catch (err) {
-	            throw new errors_js_1.ResolverError((0, ono_1.ono)(err, `Error opening file "${path}"`), path);
+	            const e = err;
+	            e.message = `Error opening file ${path}: ${e.message}`;
+	            throw new errors_js_1.ResolverError(e, path);
 	        }
 	    },
 	};
@@ -33800,7 +33431,6 @@ function requireHttp () {
 	    };
 	})();
 	Object.defineProperty(http, "__esModule", { value: true });
-	const ono_1 = require$$8;
 	const url = __importStar(requireUrl());
 	const errors_js_1 = requireErrors();
 	http.default = {
@@ -33864,14 +33494,20 @@ function requireHttp () {
 	    try {
 	        const res = await get(u, httpOptions);
 	        if (res.status >= 400) {
-	            throw (0, ono_1.ono)({ status: res.status }, `HTTP ERROR ${res.status}`);
+	            const error = new Error(`HTTP ERROR ${res.status}`);
+	            error.status = res.status;
+	            throw error;
 	        }
 	        else if (res.status >= 300) {
 	            if (!Number.isNaN(httpOptions.redirects) && redirects.length > httpOptions.redirects) {
-	                throw new errors_js_1.ResolverError((0, ono_1.ono)({ status: res.status }, `Error downloading ${redirects[0]}. \nToo many redirects: \n  ${redirects.join(" \n  ")}`));
+	                const error = new Error(`Error downloading ${redirects[0]}. \nToo many redirects: \n  ${redirects.join(" \n  ")}`);
+	                error.status = res.status;
+	                throw new errors_js_1.ResolverError(error);
 	            }
 	            else if (!("location" in res.headers) || !res.headers.location) {
-	                throw (0, ono_1.ono)({ status: res.status }, `HTTP ${res.status} redirect with no location header`);
+	                const error = new Error(`HTTP ${res.status} redirect with no location header`);
+	                error.status = res.status;
+	                throw error;
 	            }
 	            else {
 	                const redirectTo = url.resolve(u.href, res.headers.location);
@@ -33887,7 +33523,9 @@ function requireHttp () {
 	        }
 	    }
 	    catch (err) {
-	        throw new errors_js_1.ResolverError((0, ono_1.ono)(err, `Error downloading ${u.href}`), u.href);
+	        const e = err;
+	        e.message = `Error downloading ${u.href}: ${e.message}`;
+	        throw new errors_js_1.ResolverError(e, u.href);
 	    }
 	}
 	/**
@@ -34608,7 +34246,6 @@ function requireDereference () {
 	Object.defineProperty(dereference, "__esModule", { value: true });
 	const ref_js_1 = __importDefault(requireRef());
 	const pointer_js_1 = __importDefault(requirePointer());
-	const ono_1 = require$$8;
 	const url = __importStar(requireUrl());
 	const errors_1 = requireErrors();
 	dereference.default = dereference$1;
@@ -34850,7 +34487,8 @@ function requireDereference () {
 	    $refs.circular = true;
 	    options?.dereference?.onCircular?.(keyPath);
 	    if (!options.dereference.circular) {
-	        throw ono_1.ono.reference(`Circular $ref pointer found at ${keyPath}`);
+	        const error = new ReferenceError(`Circular $ref pointer found at ${keyPath}`);
+	        throw error;
 	    }
 	    return true;
 	}
@@ -34978,7 +34616,6 @@ function requireLib () {
 		Object.defineProperty(exports, "UnmatchedResolverError", { enumerable: true, get: function () { return errors_js_1.UnmatchedResolverError; } });
 		Object.defineProperty(exports, "isHandledError", { enumerable: true, get: function () { return errors_js_1.isHandledError; } });
 		Object.defineProperty(exports, "JSONParserErrorGroup", { enumerable: true, get: function () { return errors_js_1.JSONParserErrorGroup; } });
-		const ono_1 = require$$8;
 		const maybe_js_1 = __importDefault(requireMaybe());
 		const options_js_1 = requireOptions();
 		Object.defineProperty(exports, "getJsonSchemaRefParserDefaultOptions", { enumerable: true, get: function () { return options_js_1.getJsonSchemaRefParserDefaultOptions; } });
@@ -35009,7 +34646,7 @@ function requireLib () {
 		        const args = (0, normalize_args_js_1.default)(arguments);
 		        let promise;
 		        if (!args.path && !args.schema) {
-		            const err = (0, ono_1.ono)(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
+		            const err = new Error(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
 		            return (0, maybe_js_1.default)(args.callback, Promise.reject(err));
 		        }
 		        // Reset everything
@@ -35058,7 +34695,7 @@ function requireLib () {
 		                return (0, maybe_js_1.default)(args.callback, Promise.resolve(this.schema));
 		            }
 		            else {
-		                throw ono_1.ono.syntax(`"${this.$refs._root$Ref.path || result}" is not a valid JSON Schema`);
+		                throw new SyntaxError(`"${this.$refs._root$Ref.path || result}" is not a valid JSON Schema`);
 		            }
 		        }
 		        catch (err) {
