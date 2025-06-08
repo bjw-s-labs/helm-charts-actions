@@ -27411,17 +27411,31 @@ function requireUrl () {
 	 * @returns
 	 */
 	function cwd() {
-	    if (typeof window !== "undefined") {
-	        return location.href;
+	    if (typeof window !== "undefined" && window.location && window.location.href) {
+	        const href = window.location.href;
+	        if (!href || !href.startsWith("http")) {
+	            // try parsing as url, and if it fails, return root url /
+	            try {
+	                new URL(href);
+	                return href;
+	            }
+	            catch {
+	                return "/";
+	            }
+	        }
+	        return href;
 	    }
-	    const path = process.cwd();
-	    const lastChar = path.slice(-1);
-	    if (lastChar === "/" || lastChar === "\\") {
-	        return path;
+	    if (typeof process !== "undefined" && process.cwd) {
+	        const path = process.cwd();
+	        const lastChar = path.slice(-1);
+	        if (lastChar === "/" || lastChar === "\\") {
+	            return path;
+	        }
+	        else {
+	            return path + "/";
+	        }
 	    }
-	    else {
-	        return path + "/";
-	    }
+	    return "/";
 	}
 	/**
 	 * Returns the protocol of the given URL, or `undefined` if it has no protocol.
@@ -34596,8 +34610,9 @@ function requireLib () {
 		    return (mod && mod.__esModule) ? mod : { "default": mod };
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.getJsonSchemaRefParserDefaultOptions = exports.jsonSchemaParserNormalizeArgs = exports.dereferenceInternal = exports.JSONParserErrorGroup = exports.isHandledError = exports.UnmatchedParserError = exports.ParserError = exports.ResolverError = exports.MissingPointerError = exports.InvalidPointerError = exports.JSONParserError = exports.UnmatchedResolverError = exports.dereference = exports.bundle = exports.resolve = exports.parse = exports.$RefParser = void 0;
+		exports.$Refs = exports.getJsonSchemaRefParserDefaultOptions = exports.jsonSchemaParserNormalizeArgs = exports.dereferenceInternal = exports.JSONParserErrorGroup = exports.isHandledError = exports.UnmatchedParserError = exports.ParserError = exports.ResolverError = exports.MissingPointerError = exports.InvalidPointerError = exports.JSONParserError = exports.UnmatchedResolverError = exports.dereference = exports.bundle = exports.resolve = exports.parse = exports.$RefParser = void 0;
 		const refs_js_1 = __importDefault(requireRefs());
+		exports.$Refs = refs_js_1.default;
 		const parse_js_1 = __importDefault(requireParse());
 		const normalize_args_js_1 = __importDefault(requireNormalizeArgs());
 		exports.jsonSchemaParserNormalizeArgs = normalize_args_js_1.default;
