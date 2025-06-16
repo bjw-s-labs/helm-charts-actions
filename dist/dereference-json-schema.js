@@ -27366,6 +27366,7 @@ function requireUrl () {
 	url.getHash = getHash;
 	url.stripHash = stripHash;
 	url.isHttp = isHttp;
+	url.isUnsafeUrl = isUnsafeUrl;
 	url.isFileSystemPath = isFileSystemPath;
 	url.fromFileSystemPath = fromFileSystemPath;
 	url.toFileSystemPath = toFileSystemPath;
@@ -27529,6 +27530,152 @@ function requireUrl () {
 	        // It's some other protocol, such as "ftp://", "mongodb://", etc.
 	        return false;
 	    }
+	}
+	/**
+	 * Determines whether the given url is an unsafe or internal url.
+	 *
+	 * @param path - The URL or path to check
+	 * @returns true if the URL is unsafe/internal, false otherwise
+	 */
+	function isUnsafeUrl(path) {
+	    if (!path || typeof path !== "string") {
+	        return true;
+	    }
+	    // Trim whitespace and convert to lowercase for comparison
+	    const normalizedPath = path.trim().toLowerCase();
+	    // Empty or just whitespace
+	    if (!normalizedPath) {
+	        return true;
+	    }
+	    // JavaScript protocols
+	    if (normalizedPath.startsWith("javascript:") ||
+	        normalizedPath.startsWith("vbscript:") ||
+	        normalizedPath.startsWith("data:")) {
+	        return true;
+	    }
+	    // File protocol
+	    if (normalizedPath.startsWith("file:")) {
+	        return true;
+	    }
+	    // if we're in the browser, we assume that it is safe
+	    if (typeof window !== "undefined" && window.location && window.location.href) {
+	        return false;
+	    }
+	    // Local/internal network addresses
+	    const localPatterns = [
+	        // Localhost variations
+	        "localhost",
+	        "127.0.0.1",
+	        "::1",
+	        // Private IP ranges (RFC 1918)
+	        "10.",
+	        "172.16.",
+	        "172.17.",
+	        "172.18.",
+	        "172.19.",
+	        "172.20.",
+	        "172.21.",
+	        "172.22.",
+	        "172.23.",
+	        "172.24.",
+	        "172.25.",
+	        "172.26.",
+	        "172.27.",
+	        "172.28.",
+	        "172.29.",
+	        "172.30.",
+	        "172.31.",
+	        "192.168.",
+	        // Link-local addresses
+	        "169.254.",
+	        // Internal domains
+	        ".local",
+	        ".internal",
+	        ".intranet",
+	        ".corp",
+	        ".home",
+	        ".lan",
+	    ];
+	    try {
+	        // Try to parse as URL
+	        const url = new URL(normalizedPath.startsWith("//") ? "http:" + normalizedPath : normalizedPath);
+	        const hostname = url.hostname.toLowerCase();
+	        // Check against local patterns
+	        for (const pattern of localPatterns) {
+	            if (hostname === pattern || hostname.startsWith(pattern) || hostname.endsWith(pattern)) {
+	                return true;
+	            }
+	        }
+	        // Check for IP addresses in private ranges
+	        if (isPrivateIP(hostname)) {
+	            return true;
+	        }
+	        // Check for non-standard ports that might indicate internal services
+	        const port = url.port;
+	        if (port && isInternalPort(parseInt(port))) {
+	            return true;
+	        }
+	    }
+	    catch (e) {
+	        // If URL parsing fails, check if it's a relative path or contains suspicious patterns
+	        // Relative paths starting with / are generally safe for same-origin
+	        if (normalizedPath.startsWith("/") && !normalizedPath.startsWith("//")) {
+	            return false;
+	        }
+	        // Check for localhost patterns in non-URL strings
+	        for (const pattern of localPatterns) {
+	            if (normalizedPath.includes(pattern)) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
+	}
+	/**
+	 * Helper function to check if an IP address is in a private range
+	 */
+	function isPrivateIP(ip) {
+	    const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+	    const match = ip.match(ipRegex);
+	    if (!match) {
+	        return false;
+	    }
+	    const [, a, b, c, d] = match.map(Number);
+	    // Validate IP format
+	    if (a > 255 || b > 255 || c > 255 || d > 255) {
+	        return false;
+	    }
+	    // Private IP ranges
+	    return (a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) // Link-local
+	    );
+	}
+	/**
+	 * Helper function to check if a port is typically used for internal services
+	 */
+	function isInternalPort(port) {
+	    const internalPorts = [
+	        22, // SSH
+	        23, // Telnet
+	        25, // SMTP
+	        53, // DNS
+	        135, // RPC
+	        139, // NetBIOS
+	        445, // SMB
+	        993, // IMAPS
+	        995, // POP3S
+	        1433, // SQL Server
+	        1521, // Oracle
+	        3306, // MySQL
+	        3389, // RDP
+	        5432, // PostgreSQL
+	        5900, // VNC
+	        6379, // Redis
+	        8080, // Common internal web
+	        8443, // Common internal HTTPS
+	        9200, // Elasticsearch
+	        27017, // MongoDB
+	    ];
+	    return internalPorts.includes(port);
 	}
 	/**
 	 * Determines whether the given path is a filesystem path.
@@ -33477,12 +33624,16 @@ function requireHttp () {
 	     */
 	    withCredentials: false,
 	    /**
+	     * Set this to `false` if you want to allow unsafe URLs (e.g., `127.0.0.1`, localhost, and other internal URLs).
+	     */
+	    safeUrlResolver: true,
+	    /**
 	     * Determines whether this resolver can read a given file reference.
 	     * Resolvers that return true will be tried in order, until one successfully resolves the file.
 	     * Resolvers that return false will not be given a chance to resolve the file.
 	     */
 	    canRead(file) {
-	        return url.isHttp(file.url);
+	        return url.isHttp(file.url) && (!this.safeUrlResolver || !url.isUnsafeUrl(file.url));
 	    },
 	    /**
 	     * Reads the given URL and returns its raw contents as a Buffer.
@@ -34610,7 +34761,7 @@ function requireLib () {
 		    return (mod && mod.__esModule) ? mod : { "default": mod };
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
-		exports.$Refs = exports.getJsonSchemaRefParserDefaultOptions = exports.jsonSchemaParserNormalizeArgs = exports.dereferenceInternal = exports.JSONParserErrorGroup = exports.isHandledError = exports.UnmatchedParserError = exports.ParserError = exports.ResolverError = exports.MissingPointerError = exports.InvalidPointerError = exports.JSONParserError = exports.UnmatchedResolverError = exports.dereference = exports.bundle = exports.resolve = exports.parse = exports.$RefParser = void 0;
+		exports.isUnsafeUrl = exports.$Refs = exports.getJsonSchemaRefParserDefaultOptions = exports.jsonSchemaParserNormalizeArgs = exports.dereferenceInternal = exports.JSONParserErrorGroup = exports.isHandledError = exports.UnmatchedParserError = exports.ParserError = exports.ResolverError = exports.MissingPointerError = exports.InvalidPointerError = exports.JSONParserError = exports.UnmatchedResolverError = exports.dereference = exports.bundle = exports.resolve = exports.parse = exports.$RefParser = void 0;
 		const refs_js_1 = __importDefault(requireRefs());
 		exports.$Refs = refs_js_1.default;
 		const parse_js_1 = __importDefault(requireParse());
@@ -34634,6 +34785,8 @@ function requireLib () {
 		const maybe_js_1 = __importDefault(requireMaybe());
 		const options_js_1 = requireOptions();
 		Object.defineProperty(exports, "getJsonSchemaRefParserDefaultOptions", { enumerable: true, get: function () { return options_js_1.getJsonSchemaRefParserDefaultOptions; } });
+		const url_js_1 = requireUrl();
+		Object.defineProperty(exports, "isUnsafeUrl", { enumerable: true, get: function () { return url_js_1.isUnsafeUrl; } });
 		/**
 		 * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
 		 * and provides methods for traversing, manipulating, and dereferencing those references.
