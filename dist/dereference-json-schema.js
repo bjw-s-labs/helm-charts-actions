@@ -33538,6 +33538,10 @@ function requireFile () {
 	            e.message = `Malformed URI: ${file.url}: ${e.message}`;
 	            throw new errors_js_1.ResolverError(e, file.url);
 	        }
+	        // strip trailing slashes
+	        if (path.endsWith("/") || path.endsWith("\\")) {
+	            path = path.slice(0, -1);
+	        }
 	        try {
 	            return await fs_1.default.promises.readFile(path);
 	        }
