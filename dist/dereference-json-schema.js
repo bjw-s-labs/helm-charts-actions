@@ -27870,28 +27870,34 @@ function requireErrors () {
 	    return uniqueKeys;
 	}
 	class JSONParserError extends Error {
+	    name;
+	    message;
+	    source;
+	    path;
+	    code;
 	    constructor(message, source) {
 	        super();
-	        this.toJSON = toJSON.bind(this);
 	        this.code = "EUNKNOWN";
 	        this.name = "JSONParserError";
 	        this.message = message;
 	        this.source = source;
 	        this.path = null;
 	    }
+	    toJSON = toJSON.bind(this);
 	    get footprint() {
 	        return `${this.path}+${this.source}+${this.code}+${this.message}`;
 	    }
 	}
 	errors.JSONParserError = JSONParserError;
 	class JSONParserErrorGroup extends Error {
+	    files;
 	    constructor(parser) {
 	        super();
-	        this.toJSON = toJSON.bind(this);
 	        this.files = parser;
 	        this.name = "JSONParserErrorGroup";
 	        this.message = `${this.errors.length} error${this.errors.length > 1 ? "s" : ""} occurred while reading '${(0, url_js_1.toFileSystemPath)(parser.$refs._root$Ref.path)}'`;
 	    }
+	    toJSON = toJSON.bind(this);
 	    static getParserErrors(parser) {
 	        const errors = [];
 	        for (const $ref of Object.values(parser.$refs._$refs)) {
@@ -27907,26 +27913,27 @@ function requireErrors () {
 	}
 	errors.JSONParserErrorGroup = JSONParserErrorGroup;
 	class ParserError extends JSONParserError {
+	    code = "EPARSER";
+	    name = "ParserError";
 	    constructor(message, source) {
 	        super(`Error parsing ${source}: ${message}`, source);
-	        this.code = "EPARSER";
-	        this.name = "ParserError";
 	    }
 	}
 	errors.ParserError = ParserError;
 	class UnmatchedParserError extends JSONParserError {
+	    code = "EUNMATCHEDPARSER";
+	    name = "UnmatchedParserError";
 	    constructor(source) {
 	        super(`Could not find parser for "${source}"`, source);
-	        this.code = "EUNMATCHEDPARSER";
-	        this.name = "UnmatchedParserError";
 	    }
 	}
 	errors.UnmatchedParserError = UnmatchedParserError;
 	class ResolverError extends JSONParserError {
+	    code = "ERESOLVER";
+	    name = "ResolverError";
+	    ioErrorCode;
 	    constructor(ex, source) {
 	        super(ex.message || `Error reading file "${source}"`, source);
-	        this.code = "ERESOLVER";
-	        this.name = "ResolverError";
 	        if ("code" in ex) {
 	            this.ioErrorCode = String(ex.code);
 	        }
@@ -27934,18 +27941,22 @@ function requireErrors () {
 	}
 	errors.ResolverError = ResolverError;
 	class UnmatchedResolverError extends JSONParserError {
+	    code = "EUNMATCHEDRESOLVER";
+	    name = "UnmatchedResolverError";
 	    constructor(source) {
 	        super(`Could not find resolver for "${source}"`, source);
-	        this.code = "EUNMATCHEDRESOLVER";
-	        this.name = "UnmatchedResolverError";
 	    }
 	}
 	errors.UnmatchedResolverError = UnmatchedResolverError;
 	class MissingPointerError extends JSONParserError {
+	    code = "EMISSINGPOINTER";
+	    name = "MissingPointerError";
+	    targetToken;
+	    targetRef;
+	    targetFound;
+	    parentPath;
 	    constructor(token, path, targetRef, targetFound, parentPath) {
 	        super(`Missing $ref pointer "${(0, url_js_1.getHash)(path)}". Token "${token}" does not exist.`, (0, url_js_1.stripHash)(path));
-	        this.code = "EMISSINGPOINTER";
-	        this.name = "MissingPointerError";
 	        this.targetToken = token;
 	        this.targetRef = targetRef;
 	        this.targetFound = targetFound;
@@ -27954,18 +27965,18 @@ function requireErrors () {
 	}
 	errors.MissingPointerError = MissingPointerError;
 	class TimeoutError extends JSONParserError {
+	    code = "ETIMEOUT";
+	    name = "TimeoutError";
 	    constructor(timeout) {
 	        super(`Dereferencing timeout reached: ${timeout}ms`);
-	        this.code = "ETIMEOUT";
-	        this.name = "TimeoutError";
 	    }
 	}
 	errors.TimeoutError = TimeoutError;
 	class InvalidPointerError extends JSONParserError {
+	    code = "EUNMATCHEDRESOLVER";
+	    name = "InvalidPointerError";
 	    constructor(pointer, path) {
 	        super(`Invalid $ref pointer "${pointer}". Pointers must begin with "#/"`, (0, url_js_1.stripHash)(path));
-	        this.code = "EUNMATCHEDRESOLVER";
-	        this.name = "InvalidPointerError";
 	    }
 	}
 	errors.InvalidPointerError = InvalidPointerError;
@@ -28050,6 +28061,33 @@ function requirePointer () {
 		 * @class
 		 */
 		class Pointer {
+		    /**
+		     * The {@link $Ref} object that contains this {@link Pointer} object.
+		     */
+		    $ref;
+		    /**
+		     * The file path or URL, containing the JSON pointer in the hash.
+		     * This path is relative to the path of the main JSON schema file.
+		     */
+		    path;
+		    /**
+		     * The original path or URL, used for error messages.
+		     */
+		    originalPath;
+		    /**
+		     * The value of the JSON pointer.
+		     * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).
+		     */
+		    value;
+		    /**
+		     * Indicates whether the pointer references itself.
+		     */
+		    circular;
+		    /**
+		     * The number of indirect references that were traversed to resolve the value.
+		     * Resolving a single pointer may require resolving multiple $Refs.
+		     */
+		    indirections;
 		    constructor($ref, path, friendlyPath) {
 		        this.$ref = $ref;
 		        this.path = path;
@@ -28345,11 +28383,39 @@ function requireRef () {
 	 * @class
 	 */
 	class $Ref {
+	    /**
+	     * The file path or URL of the referenced file.
+	     * This path is relative to the path of the main JSON schema file.
+	     *
+	     * This path does NOT contain document fragments (JSON pointers). It always references an ENTIRE file.
+	     * Use methods such as {@link $Ref#get}, {@link $Ref#resolve}, and {@link $Ref#exists} to get
+	     * specific JSON pointers within the file.
+	     *
+	     * @type {string}
+	     */
+	    path;
+	    /**
+	     * The resolved value of the JSON reference.
+	     * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).
+	     *
+	     * @type {?*}
+	     */
+	    value;
+	    /**
+	     * The {@link $Refs} object that contains this {@link $Ref} object.
+	     *
+	     * @type {$Refs}
+	     */
+	    $refs;
+	    /**
+	     * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
+	     */
+	    pathType;
+	    /**
+	     * List of all errors. Undefined if no errors.
+	     */
+	    errors = [];
 	    constructor($refs) {
-	        /**
-	         * List of all errors. Undefined if no errors.
-	         */
-	        this.errors = [];
 	        this.$refs = $refs;
 	    }
 	    /**
@@ -28638,6 +28704,12 @@ function requireRefs () {
 	 */
 	class $Refs {
 	    /**
+	     * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
+	     *
+	     * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#circular
+	     */
+	    circular;
+	    /**
 	     * Returns the paths/URLs of all the files in your schema (including the main schema file).
 	     *
 	     * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#pathstypes
@@ -28756,33 +28828,21 @@ function requireRefs () {
 	        }
 	        return $ref.resolve(absPath, options, path, pathFromRoot);
 	    }
+	    /**
+	     * A map of paths/urls to {@link $Ref} objects
+	     *
+	     * @type {object}
+	     * @protected
+	     */
+	    _$refs = {};
+	    /**
+	     * The {@link $Ref} object that is the root of the JSON schema.
+	     *
+	     * @type {$Ref}
+	     * @protected
+	     */
+	    _root$Ref;
 	    constructor() {
-	        /**
-	         * A map of paths/urls to {@link $Ref} objects
-	         *
-	         * @type {object}
-	         * @protected
-	         */
-	        this._$refs = {};
-	        /**
-	         * Returns the paths of all the files/URLs that are referenced by the JSON schema,
-	         * including the schema itself.
-	         *
-	         * @param [types] - Only return paths of the given types ("file", "http", etc.)
-	         * @returns
-	         */
-	        /**
-	         * Returns the map of JSON references and their resolved values.
-	         *
-	         * @param [types] - Only return references of the given types ("file", "http", etc.)
-	         * @returns
-	         */
-	        /**
-	         * Returns a POJO (plain old JavaScript object) for serialization as JSON.
-	         *
-	         * @returns {object}
-	         */
-	        this.toJSON = this.values;
 	        /**
 	         * Indicates whether the schema contains any circular references.
 	         *
@@ -28793,6 +28853,25 @@ function requireRefs () {
 	        // @ts-ignore
 	        this._root$Ref = null;
 	    }
+	    /**
+	     * Returns the paths of all the files/URLs that are referenced by the JSON schema,
+	     * including the schema itself.
+	     *
+	     * @param [types] - Only return paths of the given types ("file", "http", etc.)
+	     * @returns
+	     */
+	    /**
+	     * Returns the map of JSON references and their resolved values.
+	     *
+	     * @param [types] - Only return references of the given types ("file", "http", etc.)
+	     * @returns
+	     */
+	    /**
+	     * Returns a POJO (plain old JavaScript object) for serialization as JSON.
+	     *
+	     * @returns {object}
+	     */
+	    toJSON = this.values;
 	}
 	refs.default = $Refs;
 	/**
@@ -28922,7 +29001,7 @@ function requirePlugins () {
 	            // console.log('    success');
 	            resolve({
 	                plugin,
-	                result,
+	                result: result,
 	            });
 	        }
 	        function onError(error) {
@@ -33616,7 +33695,7 @@ function requireHttp () {
 	    /**
 	     * HTTP request timeout (in milliseconds).
 	     */
-	    timeout: 60000, // 60 seconds
+	    timeout: 60_000, // 60 seconds
 	    /**
 	     * The maximum number of HTTP redirects to follow.
 	     * To disable automatic following of redirects, set this to zero.
@@ -34005,7 +34084,7 @@ function requireResolveExternal () {
 	 * then the corresponding promise will internally reference an array of promises.
 	 */
 	function crawl(obj, path, $refs, options, seen, external) {
-	    seen || (seen = new Set());
+	    seen ||= new Set();
 	    let promises = [];
 	    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
 	        seen.add(obj); // Track previously seen objects to avoid infinite recursion
@@ -34798,22 +34877,20 @@ function requireLib () {
 		 * @class
 		 */
 		class $RefParser {
-		    constructor() {
-		        /**
-		         * The parsed (and possibly dereferenced) JSON schema object
-		         *
-		         * @type {object}
-		         * @readonly
-		         */
-		        this.schema = null;
-		        /**
-		         * The resolved JSON references
-		         *
-		         * @type {$Refs}
-		         * @readonly
-		         */
-		        this.$refs = new refs_js_1.default();
-		    }
+		    /**
+		     * The parsed (and possibly dereferenced) JSON schema object
+		     *
+		     * @type {object}
+		     * @readonly
+		     */
+		    schema = null;
+		    /**
+		     * The resolved JSON references
+		     *
+		     * @type {$Refs}
+		     * @readonly
+		     */
+		    $refs = new refs_js_1.default();
 		    async parse() {
 		        const args = (0, normalize_args_js_1.default)(arguments);
 		        let promise;
