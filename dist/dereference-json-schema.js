@@ -33859,6 +33859,19 @@ function requireOptions () {
 		        /**
 		         * Determines the types of JSON references that are allowed.
 		         */
+		        bundle: {
+		            /**
+		             * A function, called for each path, which can return true to stop this path and all
+		             * subpaths from being processed further. This is useful in schemas where some
+		             * subpaths contain literal $ref keys that should not be changed.
+		             *
+		             * @type {function}
+		             */
+		            excludedPathMatcher: () => false,
+		        },
+		        /**
+		         * Determines the types of JSON references that are allowed.
+		         */
 		        dereference: {
 		            /**
 		             * Dereference circular (recursive) JSON references?
@@ -34223,7 +34236,9 @@ function requireBundle () {
 	 */
 	function crawl(parent, key, path, pathFromRoot, indirections, inventory, $refs, options) {
 	    const obj = key === null ? parent : parent[key];
-	    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
+	    const bundleOptions = (options.bundle || {});
+	    const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
+	    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
 	        if (ref_js_1.default.isAllowed$Ref(obj)) {
 	            inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
 	        }
@@ -34255,6 +34270,9 @@ function requireBundle () {
 	                }
 	                else {
 	                    crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
+	                }
+	                if (value["$ref"]) {
+	                    bundleOptions?.onBundle?.(value["$ref"], obj[key], obj, key);
 	                }
 	            }
 	        }
