@@ -34948,8 +34948,9 @@ class ZodError extends Error {
         const formErrors = [];
         for (const sub of this.issues) {
             if (sub.path.length > 0) {
-                fieldErrors[sub.path[0]] = fieldErrors[sub.path[0]] || [];
-                fieldErrors[sub.path[0]].push(mapper(sub));
+                const firstEl = sub.path[0];
+                fieldErrors[firstEl] = fieldErrors[firstEl] || [];
+                fieldErrors[firstEl].push(mapper(sub));
             }
             else {
                 formErrors.push(mapper(sub));
@@ -35032,6 +35033,8 @@ const errorMap = (issue, _ctx) => {
             else if (issue.type === "string")
                 message = `String must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `over`} ${issue.minimum} character(s)`;
             else if (issue.type === "number")
+                message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
+            else if (issue.type === "bigint")
                 message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
             else if (issue.type === "date")
                 message = `Date must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue.minimum))}`;
@@ -35630,6 +35633,8 @@ function isValidJWT(jwt, alg) {
         return false;
     try {
         const [header] = jwt.split(".");
+        if (!header)
+            return false;
         // Convert base64url to base64
         const base64 = header
             .replace(/-/g, "+")
