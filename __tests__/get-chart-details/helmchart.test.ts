@@ -199,10 +199,10 @@ describe('HelmChart', () => {
 
         expect(result.success).toBe(false)
         expect(result.errors).toContain(
-          'name: String must contain at least 1 character(s)'
+          'name: Too small: expected string to have >=1 characters'
         )
         expect(result.errors).toContain(
-          'version: String must contain at least 1 character(s)'
+          'version: Too small: expected string to have >=1 characters'
         )
       })
 
@@ -219,7 +219,7 @@ describe('HelmChart', () => {
 
         expect(result.success).toBe(false)
         expect(result.errors).toContain(
-          "type: Invalid enum value. Expected 'application' | 'library', received 'invalid-type'"
+          'type: Invalid option: expected one of "application"|"library"'
         )
       })
     })
@@ -249,7 +249,7 @@ describe('HelmChart', () => {
 
         expect(result.success).toBe(false)
         expect(result.errors).toContain(
-          'annotations.artifacthub.io/changes: Required'
+          'annotations.artifacthub.io/changes: Invalid input: expected string, received undefined'
         )
       })
 
@@ -316,10 +316,10 @@ describe('HelmChart', () => {
 
         expect(result.success).toBe(false)
         expect(result.errors).toContain(
-          "changelog.0.kind: Invalid enum value. Expected 'added' | 'changed' | 'deprecated' | 'removed' | 'fixed' | 'security', received 'invalid'"
+          'changelog.0.kind: Invalid option: expected one of "added"|"changed"|"deprecated"|"removed"|"fixed"|"security"'
         )
         expect(result.errors).toContain(
-          'changelog.0.description: String must contain at least 1 character(s)'
+          'changelog.0.description: Too small: expected string to have >=1 characters'
         )
       })
     })
