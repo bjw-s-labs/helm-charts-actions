@@ -34271,8 +34271,12 @@ function requireBundle () {
 	                else {
 	                    crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
 	                }
-	                if (value["$ref"]) {
-	                    bundleOptions?.onBundle?.(value["$ref"], obj[key], obj, key);
+	                // We need to ensure that we have an object to work with here because we may be crawling
+	                // an `examples` schema and `value` may be nullish.
+	                if (value && typeof value === "object" && !Array.isArray(value)) {
+	                    if ("$ref" in value) {
+	                        bundleOptions?.onBundle?.(value["$ref"], obj[key], obj, key);
+	                    }
 	                }
 	            }
 	        }
