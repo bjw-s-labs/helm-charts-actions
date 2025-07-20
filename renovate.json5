@@ -1,9 +1,15 @@
 {
-  extends: [
-    'github>bjw-s/renovate-config',
-    'github>bjw-s/renovate-config:automerge-github-actions'
-  ],
+  extends: ['github>bjw-s/renovate-config'],
   packageRules: [
+    {
+      description: 'Run npm bundle after npm updates',
+      matchDatasources: ['npm'],
+      postUpgradeTasks: {
+        commands: ['npm run bundle'],
+        fileFilters: ['dist/*'],
+        executionMode: 'update'
+      }
+    },
     {
       description: 'rollup',
       groupName: 'rollup',
@@ -21,10 +27,5 @@
       schedule: ['before 6am on monday'],
       matchUpdateTypes: ['patch']
     }
-  ],
-  postUpgradeTasks: {
-    commands: ['npm run bundle'],
-    fileFilters: ['dist/*'],
-    executionMode: 'update'
-  }
+  ]
 }
