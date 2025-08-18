@@ -27461,7 +27461,7 @@ function requireUrl () {
 	function getExtension(path) {
 	    const lastDot = path.lastIndexOf(".");
 	    if (lastDot >= 0) {
-	        return stripQuery(path.substr(lastDot).toLowerCase());
+	        return stripQuery(path.substring(lastDot).toLowerCase());
 	    }
 	    return "";
 	}
@@ -27474,7 +27474,7 @@ function requireUrl () {
 	function stripQuery(path) {
 	    const queryIndex = path.indexOf("?");
 	    if (queryIndex >= 0) {
-	        path = path.substr(0, queryIndex);
+	        path = path.substring(0, queryIndex);
 	    }
 	    return path;
 	}
@@ -27616,7 +27616,7 @@ function requireUrl () {
 	            return true;
 	        }
 	    }
-	    catch (e) {
+	    catch {
 	        // If URL parsing fails, check if it's a relative path or contains suspicious patterns
 	        // Relative paths starting with / are generally safe for same-origin
 	        if (normalizedPath.startsWith("/") && !normalizedPath.startsWith("//")) {
@@ -27753,13 +27753,13 @@ function requireUrl () {
 	    }
 	    // Step 3: If it's a "file://" URL, then format it consistently
 	    // or convert it to a local filesystem path
-	    let isFileUrl = path.substr(0, 7).toLowerCase() === "file://";
+	    let isFileUrl = path.toLowerCase().startsWith("file://");
 	    if (isFileUrl) {
 	        // Strip-off the protocol, and the initial "/", if there is one
-	        path = path[7] === "/" ? path.substr(8) : path.substr(7);
+	        path = path.replace(/^file:\/\//, "").replace(/^\//, "");
 	        // insert a colon (":") after the drive letter on Windows
 	        if ((0, is_windows_1.isWindows)() && path[1] === "/") {
-	            path = path[0] + ":" + path.substr(1);
+	            path = `${path[0]}:${path.substring(1)}`;
 	        }
 	        if (keepFileProtocol) {
 	            // Return the consistently-formatted "file://" URL
@@ -27778,8 +27778,8 @@ function requireUrl () {
 	        // Replace forward slashes with backslashes
 	        path = path.replace(forwardSlashPattern, "\\");
 	        // Capitalize the drive letter
-	        if (path.substr(1, 2) === ":\\") {
-	            path = path[0].toUpperCase() + path.substr(1);
+	        if (path.match(/^[a-z]:\\/i)) {
+	            path = path[0].toUpperCase() + path.substring(1);
 	        }
 	    }
 	    return path;
