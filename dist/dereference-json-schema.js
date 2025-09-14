@@ -33437,7 +33437,13 @@ function requireYaml () {
 	                return js_yaml_1.default.load(data, { schema: js_yaml_2.JSON_SCHEMA });
 	            }
 	            catch (e) {
-	                throw new errors_js_1.ParserError(e?.message || "Parser Error", file.url);
+	                try {
+	                    // fallback to non JSON_SCHEMA
+	                    return js_yaml_1.default.load(data);
+	                }
+	                catch (e) {
+	                    throw new errors_js_1.ParserError(e?.message || "Parser Error", file.url);
+	                }
 	            }
 	        }
 	        else {
