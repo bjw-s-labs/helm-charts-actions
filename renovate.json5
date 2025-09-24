@@ -2,19 +2,10 @@
   extends: ['github>bjw-s/renovate-config'],
   packageRules: [
     {
-      description: 'Run npm bundle after npm updates',
+      description: 'Group devDependencies',
+      groupName: 'devDependencies',
       matchDatasources: ['npm'],
-      postUpgradeTasks: {
-        commands: ['npm run bundle'],
-        fileFilters: ['dist/*'],
-        executionMode: 'update'
-      }
-    },
-    {
-      description: 'rollup',
-      groupName: 'rollup',
-      matchPackageNames: ['@rollup/rollup-linux-x64-gnu', 'rollup'],
-      matchDatasources: ['npm'],
+      matchDepTypes: ['devDependencies'],
       group: {
         commitMessageTopic: '{{{groupName}}} group',
         commitMessageSuffix: ''
@@ -26,6 +17,15 @@
       automerge: true,
       schedule: ['before 6am on monday'],
       matchUpdateTypes: ['patch']
+    },
+    {
+      description: 'Run npm bundle after npm updates',
+      matchDatasources: ['npm'],
+      postUpgradeTasks: {
+        commands: ['npm run bundle'],
+        fileFilters: ['dist/*'],
+        executionMode: 'update'
+      }
     }
   ]
 }
