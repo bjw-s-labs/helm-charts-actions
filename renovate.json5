@@ -22,7 +22,7 @@
       description: 'Run npm bundle after npm updates',
       matchDatasources: ['npm'],
       postUpgradeTasks: {
-        commands: ['npm run bundle'],
+        commands: ['pnpm run bundle'],
         fileFilters: ['dist/*'],
         executionMode: 'update'
       }
