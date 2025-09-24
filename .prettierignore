@@ -4,3 +4,4 @@ dist/
 node_modules/
 coverage/
 pnpm-lock.yaml
+.github/workflows/renovate.yaml
