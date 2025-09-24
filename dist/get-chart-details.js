@@ -34822,9 +34822,6 @@ function defineLazy(object, key, getter) {
         configurable: true,
     });
 }
-function objectClone(obj) {
-    return Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));
-}
 function assignProp(target, prop, value) {
     Object.defineProperty(target, prop, {
         value,
@@ -35638,7 +35635,7 @@ class Doc {
 const version = {
     major: 4,
     minor: 1,
-    patch: 8,
+    patch: 11,
 };
 
 const $ZodType = /*@__PURE__*/ $constructor("$ZodType", (inst, def) => {
@@ -36217,6 +36214,20 @@ function handleCatchall(proms, input, payload, ctx, def, inst) {
 const $ZodObject = /*@__PURE__*/ $constructor("$ZodObject", (inst, def) => {
     // requires cast because technically $ZodObject doesn't extend
     $ZodType.init(inst, def);
+    // const sh = def.shape;
+    const desc = Object.getOwnPropertyDescriptor(def, "shape");
+    if (!desc?.get) {
+        const sh = def.shape;
+        Object.defineProperty(def, "shape", {
+            get: () => {
+                const newSh = { ...sh };
+                Object.defineProperty(def, "shape", {
+                    value: newSh,
+                });
+                return newSh;
+            },
+        });
+    }
     const _normalized = cached(() => normalizeDef(def));
     defineLazy(inst._zod, "propValues", () => {
         const shape = def.shape;
@@ -37315,15 +37326,12 @@ const ZodType = /*@__PURE__*/ $constructor("ZodType", (inst, def) => {
     Object.defineProperty(inst, "_def", { value: def });
     // base methods
     inst.check = (...checks) => {
-        return inst.clone({
-            ...def,
+        return inst.clone(mergeDefs(def, {
             checks: [
                 ...(def.checks ?? []),
                 ...checks.map((ch) => typeof ch === "function" ? { _zod: { check: ch, def: { check: "custom" }, onattach: [] } } : ch),
             ],
-        }
-        // { parent: true }
-        );
+        }));
     };
     inst.clone = (def, params) => clone(inst, def, params);
     inst.brand = () => inst;
@@ -37577,7 +37585,9 @@ function array(element, params) {
 const ZodObject = /*@__PURE__*/ $constructor("ZodObject", (inst, def) => {
     $ZodObjectJIT.init(inst, def);
     ZodType.init(inst, def);
-    defineLazy(inst, "shape", () => def.shape);
+    defineLazy(inst, "shape", () => {
+        return def.shape;
+    });
     inst.keyof = () => _enum(Object.keys(inst._zod.def.shape));
     inst.catchall = (catchall) => inst.clone({ ...inst._zod.def, catchall: catchall });
     inst.passthrough = () => inst.clone({ ...inst._zod.def, catchall: unknown() });
@@ -37599,10 +37609,7 @@ const ZodObject = /*@__PURE__*/ $constructor("ZodObject", (inst, def) => {
 function object(shape, params) {
     const def = {
         type: "object",
-        get shape() {
-            assignProp(this, "shape", shape ? objectClone(shape) : {});
-            return this.shape;
-        },
+        shape: shape ?? {},
         ...normalizeParams(params),
     };
     return new ZodObject(def);
