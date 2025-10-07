@@ -1,5 +1,5 @@
 import * as core from '../../__fixtures__/core.js'
-import fs from 'fs'
+import fs from 'node:fs'
 import * as inputHelper from '../../__fixtures__/get-chart-details/inputs-helper.js'
 import {
   HelmChart,

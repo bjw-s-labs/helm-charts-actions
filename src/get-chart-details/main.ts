@@ -1,6 +1,6 @@
-import * as path from 'path'
+import * as path from 'node:path'
 import * as core from '@actions/core'
-import fs from 'fs'
+import fs from 'node:fs'
 import * as inputHelper from './inputs-helper.js'
 import { HelmChart } from './helmchart.js'
 

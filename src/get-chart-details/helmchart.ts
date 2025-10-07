@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import yaml from 'yaml'
 import { z } from 'zod'
 
@@ -26,7 +26,7 @@ export class HelmChart {
     this.annotations = annotations
 
     this.changelog = []
-    if (annotations != undefined && 'artifacthub.io/changes' in annotations) {
+    if (annotations !== undefined && 'artifacthub.io/changes' in annotations) {
       this.changelog =
         yaml.parse(annotations['artifacthub.io/changes'] as string) || []
     }
@@ -39,7 +39,7 @@ export class HelmChart {
 
   static loadFromYamlFile(filePath: string): HelmChart {
     const fileContent = fs.readFileSync(filePath, 'utf8')
-    return this.loadFromYaml(fileContent)
+    return HelmChart.loadFromYaml(fileContent)
   }
 
   validate(requireChangelog: boolean): HelmChartValidationResult {

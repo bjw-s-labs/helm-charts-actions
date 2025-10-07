@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { ActionInputs } from './action-inputs.js'
+import type { ActionInputs } from './action-inputs.js'
 
 export async function getInputs(): Promise<ActionInputs> {
   const result = {} as unknown as ActionInputs
@@ -9,7 +9,7 @@ export async function getInputs(): Promise<ActionInputs> {
   const validateChartYaml = core.getInput('validateChartYaml') === 'true'
   const requireChangelog = core.getInput('requireChangelog') === 'true'
 
-  if (chartPath == '') {
+  if (chartPath === '') {
     throw new Error('path input is required!')
   }
 
