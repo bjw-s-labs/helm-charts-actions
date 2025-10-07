@@ -27,6 +27,7 @@ import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
+import fs from 'node:fs';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -27255,10 +27256,10 @@ async function getInputs() {
     const schemaFile = coreExports.getInput('schemaFile', { required: true }) || '';
     const outputFile = coreExports.getInput('outputFile', { required: true }) || '';
     const allowFileNotFound = coreExports.getInput('allowFileNotFound', { required: true }) === 'true';
-    if (schemaFile == '') {
+    if (schemaFile === '') {
         throw new Error('schemaFile input is required!');
     }
-    if (outputFile == '') {
+    if (outputFile === '') {
         throw new Error('outputFile input is required!');
     }
     result.schemaFile = schemaFile;
@@ -35060,7 +35061,7 @@ var $RefParser = /*@__PURE__*/getDefaultExportFromCjs(libExports);
 async function run() {
     try {
         const inputs = await getInputs();
-        if (!require$$1.existsSync(inputs.schemaFile)) {
+        if (!fs.existsSync(inputs.schemaFile)) {
             if (inputs.allowFileNotFound) {
                 coreExports.warning(`${inputs.schemaFile} does not exist!`);
             }
@@ -35070,7 +35071,7 @@ async function run() {
             return;
         }
         const schema = await $RefParser.dereference(inputs.schemaFile);
-        require$$1.writeFile(inputs.outputFile, JSON.stringify(schema, null, 2), (err) => {
+        fs.writeFile(inputs.outputFile, JSON.stringify(schema, null, 2), (err) => {
             if (err) {
                 coreExports.setFailed(`Error writing to file: ${err.message}`);
                 return;
