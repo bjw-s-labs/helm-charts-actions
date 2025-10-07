@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import yaml from 'yaml'
 // import * as YAML from '../../__fixtures__/yaml.js'
 import { jest } from '@jest/globals'

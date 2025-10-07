@@ -1,5 +1,5 @@
 import * as core from '../../__fixtures__/core.js'
-import fs from 'fs'
+import fs from 'node:fs'
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import * as inputHelper from '../../__fixtures__/dereference-json-schema/inputs-helper.js'
 import { ActionInputs } from '../../src/dereference-json-schema/action-inputs.js'

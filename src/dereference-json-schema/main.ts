@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import fs from 'fs'
+import fs from 'node:fs'
 import * as inputHelper from './inputs-helper.js'
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 
