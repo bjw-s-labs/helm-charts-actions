@@ -1,3 +1,4 @@
+---
 name: 'Dereference JSON schema'
 description:
   "Takes a JSON schema at a given path and dereferences all $ref's to create a
@@ -15,5 +16,5 @@ inputs:
     required: false
     default: 'false'
 runs:
-  using: 'node20'
+  using: node24
   main: '../dist/dereference-json-schema.js'

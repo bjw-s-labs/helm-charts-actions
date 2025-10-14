@@ -1,3 +1,4 @@
+---
 name: 'Get chart details'
 description: 'Returns key details of the specified Helm chart'
 inputs:
@@ -27,5 +28,5 @@ outputs:
   changes:
     description: 'JSON representation of chart changelog (if any)'
 runs:
-  using: 'node20'
+  using: node24
   main: '../dist/get-chart-details.js'

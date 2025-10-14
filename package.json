@@ -16,7 +16,7 @@
     "actions"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "ci": "rm -rf node_modules && pnpm install --frozen-lockfile",
