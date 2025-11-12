@@ -8,6 +8,10 @@ export default {
   coverageReporters: ['json-summary', 'text', 'lcov'],
   extensionsToTreatAsEsm: ['.ts'],
   moduleFileExtensions: ['ts', 'js'],
+  moduleNameMapper: {
+    '^@apidevtools/json-schema-ref-parser$':
+      '<rootDir>/node_modules/@apidevtools/json-schema-ref-parser/dist/lib/index.js'
+  },
   preset: 'ts-jest',
   reporters: ['default'],
   resolver: 'ts-jest-resolver',
@@ -23,5 +27,8 @@ export default {
       }
     ]
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@apidevtools/json-schema-ref-parser)/)'
+  ],
   verbose: true
 }
