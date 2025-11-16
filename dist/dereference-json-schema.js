@@ -1,7 +1,7 @@
 import require$$0 from 'os';
 import require$$0$1 from 'crypto';
 import require$$1 from 'fs';
-import path, { win32, join } from 'path';
+import path, { join } from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
 import require$$0$4 from 'net';
@@ -27264,12 +27264,13 @@ async function getInputs() {
     return result;
 }
 
+const win32Sep = "\\";
 function convertPathToPosix(filePath) {
     const isExtendedLengthPath = filePath.startsWith("\\\\?\\");
     if (isExtendedLengthPath) {
         return filePath;
     }
-    return filePath.split(path?.win32?.sep).join(path?.posix?.sep ?? "/");
+    return filePath.split(win32Sep).join(path?.posix?.sep ?? "/");
 }
 
 const isWindowsConst = /^win/.test(globalThis.process ? globalThis.process.platform : "");
@@ -27279,6 +27280,7 @@ const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
 const jsonPointerSlash = /~1/g;
 const jsonPointerTilde = /~0/g;
+const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
     [/\?/g, "%3F"],
@@ -27624,7 +27626,7 @@ function fromFileSystemPath(path) {
         const posixUpper = projectDirPosixPath.toUpperCase();
         const hasProjectDir = upperPath.includes(posixUpper);
         const hasProjectUri = upperPath.includes(posixUpper);
-        const isAbsolutePath = win32?.isAbsolute(path) ||
+        const isAbsolutePath = isAbsoluteWin32Path.test(path) ||
             path.startsWith("http://") ||
             path.startsWith("https://") ||
             path.startsWith("file://");
@@ -28989,7 +28991,7 @@ var jsonParser = {
     },
 };
 
-/*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
+/*! js-yaml 4.1.1 https://github.com/nodeca/js-yaml @license MIT */
 function isNothing(subject) {
   return (typeof subject === 'undefined') || (subject === null);
 }
@@ -30200,6 +30202,22 @@ function charFromCodepoint(c) {
   );
 }
 
+// set a property of a literal object, while protecting against prototype pollution,
+// see https://github.com/nodeca/js-yaml/issues/164 for more details
+function setProperty(object, key, value) {
+  // used for this specific key only because Object.defineProperty is slow
+  if (key === '__proto__') {
+    Object.defineProperty(object, key, {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: value
+    });
+  } else {
+    object[key] = value;
+  }
+}
+
 var simpleEscapeCheck = new Array(256); // integer, for fast access
 var simpleEscapeMap = new Array(256);
 for (var i = 0; i < 256; i++) {
@@ -30378,7 +30396,7 @@ function mergeMappings(state, destination, source, overridableKeys) {
     key = sourceKeys[index];
 
     if (!_hasOwnProperty$1.call(destination, key)) {
-      destination[key] = source[key];
+      setProperty(destination, key, source[key]);
       overridableKeys[key] = true;
     }
   }
@@ -30438,17 +30456,7 @@ function storeMappingPair(state, _result, overridableKeys, keyTag, keyNode, valu
       throwError(state, 'duplicated mapping key');
     }
 
-    // used for this specific key only because Object.defineProperty is slow
-    if (keyNode === '__proto__') {
-      Object.defineProperty(_result, keyNode, {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value: valueNode
-      });
-    } else {
-      _result[keyNode] = valueNode;
-    }
+    setProperty(_result, keyNode, valueNode);
     delete overridableKeys[keyNode];
   }
 
