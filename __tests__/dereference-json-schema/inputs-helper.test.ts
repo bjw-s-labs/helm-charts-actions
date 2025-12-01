@@ -4,9 +4,8 @@ import { jest } from '@jest/globals'
 
 jest.unstable_mockModule('@actions/core', () => core)
 
-const { getInputs } = await import(
-  '../../src/dereference-json-schema/inputs-helper.js'
-)
+const { getInputs } =
+  await import('../../src/dereference-json-schema/inputs-helper.js')
 
 describe('inputs', () => {
   afterEach(() => {
