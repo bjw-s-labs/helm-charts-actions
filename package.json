@@ -35,7 +35,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "2.0.2",
-    "@apidevtools/json-schema-ref-parser": "15.1.3",
+    "@apidevtools/json-schema-ref-parser": "15.2.1",
     "yaml": "2.8.2",
     "zod": "^4.0.0"
   },

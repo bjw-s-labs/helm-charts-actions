@@ -33378,7 +33378,7 @@ async function download(u, httpOptions, _redirects) {
 async function get(u, httpOptions) {
     let controller;
     let timeoutId;
-    if (httpOptions.timeout) {
+    if (httpOptions.timeout && typeof AbortController !== "undefined") {
         controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), httpOptions.timeout);
     }
