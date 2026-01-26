@@ -34092,10 +34092,13 @@ function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, de
         // overhaul.
         if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
             if (cache.value.$ref === $ref.$ref) {
+                // Fire onCircular for cached circular refs so callers are notified of every occurrence
+                foundCircularReference(path, $refs, options);
                 return cache;
             }
         }
         else {
+            foundCircularReference(path, $refs, options);
             return cache;
         }
     }
