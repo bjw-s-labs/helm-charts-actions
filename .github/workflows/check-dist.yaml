@@ -46,6 +46,10 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
 
+      - name: Remove dist/ Directory
+        id: remove-dist
+        run: npx rimraf ./dist
+
       - name: Install Dependencies
         id: install
         run: |
