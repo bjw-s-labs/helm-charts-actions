@@ -28668,9 +28668,23 @@ class Pointer {
         // Crawl the object, one token at a time
         this.value = unwrapOrThrow(obj);
         for (let i = 0; i < tokens.length; i++) {
+            // During token walking, if the current value is an extended $ref (has sibling keys
+            // alongside $ref, as allowed by JSON Schema 2019-09+), and resolveIf$Ref marks it
+            // as circular because the $ref resolves to the same path we're walking, we should
+            // reset the circular flag and continue walking the object's own properties.
+            // This prevents false circular detection when e.g. a root schema has both
+            // $ref: "#/$defs/Foo" and $defs: { Foo: {...} } as siblings.
+            const wasCircular = this.circular;
+            const isExtendedRef = $Ref.isExtended$Ref(this.value);
             if (resolveIf$Ref(this, options, pathFromRoot)) {
                 // The $ref path has changed, so append the remaining tokens to the path
                 this.path = Pointer.join(this.path, tokens.slice(i));
+            }
+            else if (!wasCircular && this.circular && isExtendedRef) {
+                // resolveIf$Ref set circular=true on an extended $ref during token walking.
+                // Since we still have tokens to process, the object should be walked by its
+                // properties, not treated as a circular self-reference.
+                this.circular = false;
             }
             const token = tokens[i];
             if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
@@ -29595,7 +29609,7 @@ async function readFile(file, options, $refs) {
         }
         else if (!err || !("error" in err)) {
             // Throw a generic, friendly error.
-            throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`);
+            throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`, { cause: err });
         }
         // Throw the original error, if it's one of our own (user-friendly) errors.
         else if (err.error instanceof ResolverError) {
@@ -29646,7 +29660,7 @@ async function parseFile(file, options, $refs) {
             throw err;
         }
         else if (!err || !("error" in err)) {
-            throw new SyntaxError(`Unable to parse ${file.url}`);
+            throw new SyntaxError(`Unable to parse ${file.url}`, { cause: err });
         }
         else if (err.error instanceof ParserError) {
             throw err.error;
@@ -34159,8 +34173,17 @@ function bundle(parser, options) {
     // Build an inventory of all $ref pointers in the JSON Schema
     const inventory = [];
     crawl$1(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
+    // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
+    const rootId = parser.schema && typeof parser.schema === "object" && "$id" in parser.schema
+        ? parser.schema.$id
+        : undefined;
     // Remap all $ref pointers
-    remap(inventory, options);
+    remap(inventory, options, rootId);
+    // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
+    const bundleOptions = (options.bundle || {});
+    if (bundleOptions.optimizeInternalRefs !== false) {
+        fixRefsThroughRefs(inventory, parser.schema);
+    }
 }
 /**
  * Recursively crawls the given value, and inventories all JSON references.
@@ -34300,7 +34323,7 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, indirections, in
  *
  * @param inventory
  */
-function remap(inventory, options) {
+function remap(inventory, options, rootId) {
     // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
     inventory.sort((a, b) => {
         if (a.file !== b.file) {
@@ -34345,17 +34368,35 @@ function remap(inventory, options) {
     let file, hash, pathFromRoot;
     for (const entry of inventory) {
         // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
+        const bundleOpts = (options.bundle || {});
         if (!entry.external) {
-            // This $ref already resolves to the main JSON Schema file
-            entry.$ref.$ref = entry.hash;
+            // This $ref already resolves to the main JSON Schema file.
+            // When optimizeInternalRefs is false, preserve the original internal ref path
+            // instead of rewriting it to the fully resolved hash.
+            if (bundleOpts.optimizeInternalRefs !== false) {
+                entry.$ref.$ref = entry.hash;
+            }
         }
         else if (entry.file === file && entry.hash === hash) {
             // This $ref points to the same value as the previous $ref, so remap it to the same path
-            entry.$ref.$ref = pathFromRoot;
+            if (rootId && isInsideIdScope(inventory, entry)) {
+                // This entry is inside a sub-schema with its own $id, so a bare root-relative JSON Pointer
+                // would be resolved relative to that $id, not the document root. Qualify with the root $id.
+                entry.$ref.$ref = rootId + pathFromRoot;
+            }
+            else {
+                entry.$ref.$ref = pathFromRoot;
+            }
         }
         else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
             // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
-            entry.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
+            const subPath = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
+            if (rootId && isInsideIdScope(inventory, entry)) {
+                entry.$ref.$ref = rootId + subPath;
+            }
+            else {
+                entry.$ref.$ref = subPath;
+            }
         }
         else {
             // We've moved to a new file or new hash
@@ -34406,6 +34447,103 @@ function removeFromInventory(inventory, entry) {
     const index = inventory.indexOf(entry);
     inventory.splice(index, 1);
 }
+/**
+ * After remapping, some $ref paths may traverse through other $ref nodes.
+ * JSON pointer resolution does not follow $ref indirection, so these paths are invalid.
+ * This function detects and fixes such paths by following any intermediate $refs
+ * to compute a valid direct path.
+ */
+function fixRefsThroughRefs(inventory, schema) {
+    for (const entry of inventory) {
+        if (!entry.$ref || typeof entry.$ref !== "object" || !("$ref" in entry.$ref)) {
+            continue;
+        }
+        const refValue = entry.$ref.$ref;
+        if (typeof refValue !== "string" || !refValue.startsWith("#/")) {
+            continue;
+        }
+        const fixedPath = resolvePathThroughRefs(schema, refValue);
+        if (fixedPath !== refValue) {
+            entry.$ref.$ref = fixedPath;
+        }
+    }
+}
+/**
+ * Walks a JSON pointer path through the schema. If any intermediate value
+ * is a $ref, follows it and adjusts the path accordingly.
+ * Returns the corrected path that doesn't traverse through any $ref.
+ */
+function resolvePathThroughRefs(schema, refPath) {
+    if (!refPath.startsWith("#/")) {
+        return refPath;
+    }
+    const segments = refPath.slice(2).split("/");
+    let current = schema;
+    const resolvedSegments = [];
+    for (const seg of segments) {
+        if (current === null || current === undefined || typeof current !== "object") {
+            // Can't walk further, return original path
+            return refPath;
+        }
+        // If the current value is a $ref, follow it
+        if ("$ref" in current && typeof current.$ref === "string" && current.$ref.startsWith("#/")) {
+            // Follow the $ref and restart the path from its target
+            const targetSegments = current.$ref.slice(2).split("/");
+            resolvedSegments.length = 0;
+            resolvedSegments.push(...targetSegments);
+            current = walkPath(schema, current.$ref);
+            if (current === null || current === undefined || typeof current !== "object") {
+                return refPath;
+            }
+        }
+        const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
+        const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
+        current = current[idx];
+        resolvedSegments.push(seg);
+    }
+    const result = "#/" + resolvedSegments.join("/");
+    return result;
+}
+/**
+ * Walks a JSON pointer path through a schema object, returning the value at that path.
+ */
+function walkPath(schema, path) {
+    if (!path.startsWith("#/")) {
+        return undefined;
+    }
+    const segments = path.slice(2).split("/");
+    let current = schema;
+    for (const seg of segments) {
+        if (current === null || current === undefined || typeof current !== "object") {
+            return undefined;
+        }
+        const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
+        const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
+        current = current[idx];
+    }
+    return current;
+}
+/**
+ * Checks whether the given inventory entry is located inside a sub-schema that has its own $id.
+ * If so, root-relative JSON Pointer $refs placed at this location would be resolved against
+ * the $id base URI rather than the document root, making them invalid.
+ */
+function isInsideIdScope(inventory, entry) {
+    for (const other of inventory) {
+        // Skip root-level entries
+        if (other.pathFromRoot === "#" || other.pathFromRoot === "#/") {
+            continue;
+        }
+        // Check if the other entry is an ancestor of the current entry
+        if (entry.pathFromRoot.startsWith(other.pathFromRoot + "/")) {
+            // Check if the ancestor's resolved value has a $id
+            if (other.value && typeof other.value === "object" && "$id" in other.value) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 /**
  * Crawls the JSON schema, finds all JSON references, and dereferences them.
@@ -34417,7 +34555,7 @@ function removeFromInventory(inventory, entry) {
 function dereference(parser, options) {
     const start = Date.now();
     // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, "#", new Set(), new Set(), new Map(), parser.$refs, options, start);
+    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, "#", new Set(), new Set(), new Map(), parser.$refs, options, start, 0);
     parser.$refs.circular = dereferenced.circular;
     parser.schema = dereferenced.value;
 }
@@ -34433,9 +34571,10 @@ function dereference(parser, options) {
  * @param $refs
  * @param options
  * @param startTime - The time when the dereferencing started
+ * @param depth - The current recursion depth
  * @returns
  */
-function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime) {
+function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
     let dereferenced;
     const result = {
         value: obj,
@@ -34443,13 +34582,19 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
     };
     checkDereferenceTimeout(startTime, options);
     const derefOptions = (options.dereference || {});
+    const maxDepth = derefOptions.maxDepth ?? 500;
+    if (depth > maxDepth) {
+        throw new RangeError(`Maximum dereference depth (${maxDepth}) exceeded at ${pathFromRoot}. ` +
+            `This likely indicates an extremely deep or recursive schema. ` +
+            `You can increase this limit with the dereference.maxDepth option.`);
+    }
     const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
     if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
         if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
             parents.add(obj);
             processedObjects.add(obj);
             if ($Ref.isAllowed$Ref(obj, options)) {
-                dereferenced = dereference$Ref(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime);
+                dereferenced = dereference$Ref(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                 result.circular = dereferenced.circular;
                 result.value = dereferenced.value;
             }
@@ -34462,9 +34607,9 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
                         continue;
                     }
                     const value = obj[key];
-                    let circular = false;
+                    let circular;
                     if ($Ref.isAllowed$Ref(value, options)) {
-                        dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime);
+                        dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                         circular = dereferenced.circular;
                         // Avoid pointless mutations; breaks frozen objects to no profit
                         if (obj[key] !== dereferenced.value) {
@@ -34480,7 +34625,13 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
                                     });
                                 }
                             }
-                            obj[key] = dereferenced.value;
+                            // Clone the dereferenced value if cloneReferences is enabled and this is not a
+                            // circular reference. This prevents mutations to one location from affecting others.
+                            let assignedValue = dereferenced.value;
+                            if (derefOptions?.cloneReferences && !circular && assignedValue && typeof assignedValue === "object") {
+                                assignedValue = structuredClone(assignedValue);
+                            }
+                            obj[key] = assignedValue;
                             // If we have data to preserve and our dereferenced object is still an object then
                             // we need copy back our preserved data into our dereferenced schema.
                             if (derefOptions?.preservedProperties) {
@@ -34495,7 +34646,7 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
                     }
                     else {
                         if (!parents.has(value)) {
-                            dereferenced = crawl(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime);
+                            dereferenced = crawl(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
                             circular = dereferenced.circular;
                             // Avoid pointless mutations; breaks frozen objects to no profit
                             if (obj[key] !== dereferenced.value) {
@@ -34528,7 +34679,7 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
  * @param options
  * @returns
  */
-function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime) {
+function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
     const isExternalRef = $Ref.isExternal$Ref($ref);
     const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
     const $refPath = resolve(shouldResolveOnCwd ? cwd() : path, $ref.$ref);
@@ -34598,7 +34749,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, de
     // Crawl the dereferenced value (unless it's circular)
     if (!circular) {
         // Determine if the dereferenced value is circular
-        const dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime);
+        const dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
         circular = dereferenced.circular;
         dereferencedValue = dereferenced.value;
     }
