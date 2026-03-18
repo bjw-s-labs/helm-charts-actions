@@ -1,4 +1,3 @@
-import { fixupPluginRules } from '@eslint/compat'
 import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
@@ -26,7 +25,6 @@ export default [
   ),
   {
     plugins: {
-      import: fixupPluginRules(_import),
       jest,
       prettier,
       '@typescript-eslint': typescriptEslint
@@ -50,21 +48,11 @@ export default [
       }
     },
 
-    settings: {
-      'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-          project: 'tsconfig.json'
-        }
-      }
-    },
-
     rules: {
       camelcase: 'off',
       'eslint-comments/no-use': 'off',
       'eslint-comments/no-unused-disable': 'off',
       'i18n-text/no-en': 'off',
-      'import/no-namespace': 'off',
       'no-console': 'off',
       'no-shadow': 'off',
       'no-unused-vars': 'off',

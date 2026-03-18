@@ -27,7 +27,7 @@
     "format:check": "npx prettier --check .",
     "lint": "pnpm exec eslint .",
     "local-action": "npx @github/local-action . src/main.ts .env",
-    "package": "npx rimraf ./dist && npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "package": "npx rimraf ./dist && npx rollup --config rollup.config.mjs",
     "package:watch": "pnpm run package -- --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
     "all": "pnpm run format:write && pnpm run lint && pnpm run test && pnpm run coverage && pnpm run package"
@@ -50,6 +50,7 @@
     "@rollup/plugin-typescript": "12.3.0",
     "@rollup/rollup-linux-x64-gnu": "*",
     "@types/jest": "30.0.0",
+    "@types/node": ">=24.0.0",
     "@typescript-eslint/eslint-plugin": "8.57.0",
     "@typescript-eslint/parser": "8.57.0",
     "eslint": "10.0.3",
@@ -62,5 +63,8 @@
     "rollup": "4.59.0",
     "ts-jest": "29.4.6",
     "ts-jest-resolver": "2.0.1"
+  },
+  "resolutions": {
+    "undici": "7.24.4"
   }
 }

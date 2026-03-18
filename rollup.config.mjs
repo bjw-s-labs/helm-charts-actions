@@ -2,6 +2,12 @@ import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 
+function onwarn(warning, warn) {
+  // Suppress noisy but harmless warnings from CJS dependencies like @actions/core
+  if (warning.code === 'THIS_IS_UNDEFINED') return
+  warn(warning)
+}
+
 const config = [
   {
     input: 'src/dereference-json-schema/index.ts',
@@ -11,6 +17,7 @@ const config = [
       format: 'es',
       sourcemap: true
     },
+    onwarn,
     plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
   },
   {
@@ -21,6 +28,7 @@ const config = [
       format: 'es',
       sourcemap: true
     },
+    onwarn,
     plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()]
   }
 ]
