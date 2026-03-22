@@ -8721,10 +8721,10 @@ function requireFormdataParser () {
 	const { webidl } = requireWebidl();
 	const assert = require$$0$1;
 	const { isomorphicDecode } = requireInfra();
-	const { utf8DecodeBytes } = requireEncoding();
 
 	const dd = Buffer.from('--');
 	const decoder = new TextDecoder();
+	const decoderIgnoreBOM = new TextDecoder('utf-8', { ignoreBOM: true });
 
 	/**
 	 * @param {string} chars
@@ -8903,7 +8903,7 @@ function requireFormdataParser () {
 	      // 5.11. Otherwise:
 
 	      // 5.11.1. Let value be the UTF-8 decoding without BOM of body.
-	      value = utf8DecodeBytes(Buffer.from(body));
+	      value = decoderIgnoreBOM.decode(Buffer.from(body));
 	    }
 
 	    // 5.12. Assert: name is a scalar value string and value is either a scalar value string or a File object.
@@ -23029,8 +23029,16 @@ function requireCacheHandler () {
 	    staleIfError = staleAt + (cacheControlDirectives['stale-if-error'] * 1000);
 	  }
 
-	  if (staleWhileRevalidate === -Infinity && staleIfError === -Infinity) {
+	  if (cacheControlDirectives.immutable && staleWhileRevalidate === -Infinity && staleIfError === -Infinity) {
 	    immutable = now + 31536000000;
+	  }
+
+	  // When no stale directives or immutable flag, add a revalidation buffer
+	  // equal to the freshness lifetime so the entry survives past staleAt long
+	  // enough to be revalidated instead of silently disappearing.
+	  if (staleWhileRevalidate === -Infinity && staleIfError === -Infinity && immutable === -Infinity) {
+	    const freshnessLifetime = staleAt - now;
+	    return staleAt + freshnessLifetime
 	  }
 
 	  return Math.max(staleAt, staleWhileRevalidate, staleIfError, immutable)
