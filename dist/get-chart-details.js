@@ -2242,19 +2242,39 @@ function requireUtil$5 () {
 	    const key = headerNameToString(headers[i]);
 	    let val = obj[key];
 
-	    if (val) {
-	      if (typeof val === 'string') {
-	        val = [val];
-	        obj[key] = val;
-	      }
-	      val.push(headers[i + 1].toString('latin1'));
-	    } else {
-	      const headersValue = headers[i + 1];
-	      if (typeof headersValue === 'string') {
-	        obj[key] = headersValue;
+	    if (val !== undefined) {
+	      if (!Object.hasOwn(obj, key)) {
+	        const headersValue = typeof headers[i + 1] === 'string'
+	          ? headers[i + 1]
+	          : Array.isArray(headers[i + 1])
+	            ? headers[i + 1].map(x => x.toString('latin1'))
+	            : headers[i + 1].toString('latin1');
+
+	        if (key === '__proto__') {
+	          Object.defineProperty(obj, key, {
+	            value: headersValue,
+	            enumerable: true,
+	            configurable: true,
+	            writable: true
+	          });
+	        } else {
+	          obj[key] = headersValue;
+	        }
 	      } else {
-	        obj[key] = Array.isArray(headersValue) ? headersValue.map(x => x.toString('latin1')) : headersValue.toString('latin1');
+	        if (typeof val === 'string') {
+	          val = [val];
+	          obj[key] = val;
+	        }
+	        val.push(headers[i + 1].toString('latin1'));
 	      }
+	    } else {
+	      const headersValue = typeof headers[i + 1] === 'string'
+	        ? headers[i + 1]
+	        : Array.isArray(headers[i + 1])
+	          ? headers[i + 1].map(x => x.toString('latin1'))
+	          : headers[i + 1].toString('latin1');
+
+	      obj[key] = headersValue;
 	    }
 	  }
 
@@ -2999,10 +3019,12 @@ function requireDiagnostics () {
 
 	  diagnosticsChannel.subscribe('undici:websocket:open',
 	    evt => {
-	      const {
-	        address: { address, port }
-	      } = evt;
-	      debugLog('connection opened %s%s', address, port ? `:${port}` : '');
+	      if (evt.address != null) {
+	        const { address, port } = evt.address;
+	        debugLog('connection opened %s%s', address, port ? `:${port}` : '');
+	      } else {
+	        debugLog('connection opened');
+	      }
 	    });
 
 	  diagnosticsChannel.subscribe('undici:websocket:close',
@@ -3467,13 +3489,21 @@ function requireRequest$1 () {
 	  } else if (headerName === 'transfer-encoding' || headerName === 'keep-alive' || headerName === 'upgrade') {
 	    throw new InvalidArgumentError(`invalid ${headerName} header`)
 	  } else if (headerName === 'connection') {
-	    const value = typeof val === 'string' ? val.toLowerCase() : null;
-	    if (value !== 'close' && value !== 'keep-alive') {
+	    // Per RFC 7230 Section 6.1, Connection header can contain
+	    // a comma-separated list of connection option tokens (header names)
+	    const value = typeof val === 'string' ? val : null;
+	    if (value === null) {
 	      throw new InvalidArgumentError('invalid connection header')
 	    }
 
-	    if (value === 'close') {
-	      request.reset = true;
+	    for (const token of value.toLowerCase().split(',')) {
+	      const trimmed = token.trim();
+	      if (!isValidHTTPToken(trimmed)) {
+	        throw new InvalidArgumentError('invalid connection header')
+	      }
+	      if (trimmed === 'close') {
+	        request.reset = true;
+	      }
 	    }
 	  } else if (headerName === 'expect') {
 	    throw new NotSupportedError('expect header not supported')
@@ -12922,65 +12952,70 @@ function requireClient () {
 	    });
 	  }
 
-	  client[kConnector]({
-	    host,
-	    hostname,
-	    protocol,
-	    port,
-	    servername: client[kServerName],
-	    localAddress: client[kLocalAddress]
-	  }, (err, socket) => {
-	    if (err) {
-	      handleConnectError(client, err, { host, hostname, protocol, port });
+	  try {
+	    client[kConnector]({
+	      host,
+	      hostname,
+	      protocol,
+	      port,
+	      servername: client[kServerName],
+	      localAddress: client[kLocalAddress]
+	    }, (err, socket) => {
+	      if (err) {
+	        handleConnectError(client, err, { host, hostname, protocol, port });
+	        client[kResume]();
+	        return
+	      }
+
+	      if (client.destroyed) {
+	        util.destroy(socket.on('error', noop), new ClientDestroyedError());
+	        client[kResume]();
+	        return
+	      }
+
+	      assert(socket);
+
+	      try {
+	        client[kHTTPContext] = socket.alpnProtocol === 'h2'
+	          ? connectH2(client, socket)
+	          : connectH1(client, socket);
+	      } catch (err) {
+	        socket.destroy().on('error', noop);
+	        handleConnectError(client, err, { host, hostname, protocol, port });
+	        client[kResume]();
+	        return
+	      }
+
+	      client[kConnecting] = false;
+
+	      socket[kCounter] = 0;
+	      socket[kMaxRequests] = client[kMaxRequests];
+	      socket[kClient] = client;
+	      socket[kError] = null;
+
+	      if (channels.connected.hasSubscribers) {
+	        channels.connected.publish({
+	          connectParams: {
+	            host,
+	            hostname,
+	            protocol,
+	            port,
+	            version: client[kHTTPContext]?.version,
+	            servername: client[kServerName],
+	            localAddress: client[kLocalAddress]
+	          },
+	          connector: client[kConnector],
+	          socket
+	        });
+	      }
+
+	      client.emit('connect', client[kUrl], [client]);
 	      client[kResume]();
-	      return
-	    }
-
-	    if (client.destroyed) {
-	      util.destroy(socket.on('error', noop), new ClientDestroyedError());
-	      client[kResume]();
-	      return
-	    }
-
-	    assert(socket);
-
-	    try {
-	      client[kHTTPContext] = socket.alpnProtocol === 'h2'
-	        ? connectH2(client, socket)
-	        : connectH1(client, socket);
-	    } catch (err) {
-	      socket.destroy().on('error', noop);
-	      handleConnectError(client, err, { host, hostname, protocol, port });
-	      client[kResume]();
-	      return
-	    }
-
-	    client[kConnecting] = false;
-
-	    socket[kCounter] = 0;
-	    socket[kMaxRequests] = client[kMaxRequests];
-	    socket[kClient] = client;
-	    socket[kError] = null;
-
-	    if (channels.connected.hasSubscribers) {
-	      channels.connected.publish({
-	        connectParams: {
-	          host,
-	          hostname,
-	          protocol,
-	          port,
-	          version: client[kHTTPContext]?.version,
-	          servername: client[kServerName],
-	          localAddress: client[kLocalAddress]
-	        },
-	        connector: client[kConnector],
-	        socket
-	      });
-	    }
-
-	    client.emit('connect', client[kUrl], [client]);
+	    });
+	  } catch (err) {
+	    handleConnectError(client, err, { host, hostname, protocol, port });
 	    client[kResume]();
-	  });
+	  }
 	}
 
 	function handleConnectError (client, err, { host, hostname, protocol, port }) {
@@ -17700,7 +17735,8 @@ function requireMockSymbols () {
 	  kMockAgentAddCallHistoryLog: Symbol('mock agent add call history log'),
 	  kMockAgentIsCallHistoryEnabled: Symbol('mock agent is call history enabled'),
 	  kMockAgentAcceptsNonStandardSearchParameters: Symbol('mock agent accepts non standard search parameters'),
-	  kMockCallHistoryAddLog: Symbol('mock call history add log')
+	  kMockCallHistoryAddLog: Symbol('mock call history add log'),
+	  kTotalDispatchCount: Symbol('total dispatch count')
 	};
 	return mockSymbols;
 }
@@ -17718,7 +17754,8 @@ function requireMockUtils () {
 	  kMockAgent,
 	  kOriginalDispatch,
 	  kOrigin,
-	  kGetNetConnect
+	  kGetNetConnect,
+	  kTotalDispatchCount
 	} = requireMockSymbols();
 	const { serializePathWithQuery } = requireUtil$5();
 	const { STATUS_CODES } = require$$2;
@@ -17918,6 +17955,8 @@ function requireMockUtils () {
 	  const replyData = typeof data === 'function' ? { callback: data } : { ...data };
 	  const newMockDispatch = { ...baseData, ...key, pending: true, data: { error: null, ...replyData } };
 	  mockDispatches.push(newMockDispatch);
+	  // Track total number of intercepts ever registered for better error messages
+	  mockDispatches[kTotalDispatchCount] = (mockDispatches[kTotalDispatchCount] || 0) + 1;
 	  return newMockDispatch
 	}
 
@@ -18113,13 +18152,16 @@ function requireMockUtils () {
 	      } catch (error) {
 	        if (error.code === 'UND_MOCK_ERR_MOCK_NOT_MATCHED') {
 	          const netConnect = agent[kGetNetConnect]();
+	          const totalInterceptsCount = this[kDispatches][kTotalDispatchCount] || this[kDispatches].length;
+	          const pendingInterceptsCount = this[kDispatches].filter(({ consumed }) => !consumed).length;
+	          const interceptsMessage = `, ${pendingInterceptsCount} interceptor(s) remaining out of ${totalInterceptsCount} defined`;
 	          if (netConnect === false) {
-	            throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect disabled)`)
+	            throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect disabled)${interceptsMessage}`)
 	          }
 	          if (checkNetConnect(netConnect, origin)) {
 	            originalDispatch.call(this, opts, handler);
 	          } else {
-	            throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect is not enabled for this origin)`)
+	            throw new MockNotMatchedError(`${error.message}: subsequent request to origin ${origin} was not allowed (net.connect is not enabled for this origin)${interceptsMessage}`)
 	          }
 	        } else {
 	          throw error
@@ -22671,7 +22713,7 @@ function requireCacheHandler () {
 	    }
 
 	    const cacheControlDirectives = cacheControlHeader ? parseCacheControlHeader(cacheControlHeader) : {};
-	    if (!canCacheResponse(this.#cacheType, statusCode, resHeaders, cacheControlDirectives)) {
+	    if (!canCacheResponse(this.#cacheType, statusCode, resHeaders, cacheControlDirectives, this.#cacheKey.headers)) {
 	      return downstreamOnHeaders()
 	    }
 
@@ -22876,8 +22918,9 @@ function requireCacheHandler () {
 	 * @param {number} statusCode
 	 * @param {import('../../types/header.d.ts').IncomingHttpHeaders} resHeaders
 	 * @param {import('../../types/cache-interceptor.d.ts').default.CacheControlDirectives} cacheControlDirectives
+	 * @param {import('../../types/header.d.ts').IncomingHttpHeaders} [reqHeaders]
 	 */
-	function canCacheResponse (cacheType, statusCode, resHeaders, cacheControlDirectives) {
+	function canCacheResponse (cacheType, statusCode, resHeaders, cacheControlDirectives, reqHeaders) {
 	  // Status code must be final and understood.
 	  if (statusCode < 200 || NOT_UNDERSTOOD_STATUS_CODES.includes(statusCode)) {
 	    return false
@@ -22908,8 +22951,16 @@ function requireCacheHandler () {
 	  }
 
 	  // https://www.rfc-editor.org/rfc/rfc9111.html#name-storing-responses-to-authen
-	  if (resHeaders.authorization) {
-	    if (!cacheControlDirectives.public || typeof resHeaders.authorization !== 'string') {
+	  if (reqHeaders?.authorization) {
+	    if (
+	      !cacheControlDirectives.public &&
+	      !cacheControlDirectives['s-maxage'] &&
+	      !cacheControlDirectives['must-revalidate']
+	    ) {
+	      return false
+	    }
+
+	    if (typeof reqHeaders.authorization !== 'string') {
 	      return false
 	    }
 
@@ -34424,6 +34475,18 @@ function requireWebsocket () {
 	const { WebsocketFrameSend } = requireFrame();
 	const { channels } = requireDiagnostics();
 
+	function getSocketAddress (socket) {
+	  if (typeof socket?.address === 'function') {
+	    return socket.address()
+	  }
+
+	  if (typeof socket?.session?.socket?.address === 'function') {
+	    return socket.session.socket.address()
+	  }
+
+	  return null
+	}
+
 	/**
 	 * @typedef {object} Handler
 	 * @property {(response: any, extensions?: string[]) => void} onConnectionEstablished
@@ -34890,7 +34953,7 @@ function requireWebsocket () {
 	      // Convert headers to a plain object for the event
 	      const headers = response.headersList.entries;
 	      channels.open.publish({
-	        address: response.socket.address(),
+	        address: getSocketAddress(response.socket),
 	        protocol: this.#protocol,
 	        extensions: this.#extensions,
 	        websocket: this,
