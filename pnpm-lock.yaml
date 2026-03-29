@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  undici: 7.24.5
+  undici: 7.24.6
 
 importers:
 
@@ -2793,8 +2793,8 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
-  undici@7.24.5:
-    resolution: {integrity: sha512-3IWdCpjgxp15CbJnsi/Y9TCDE7HWVN19j1hmzVhoAkY/+CJx449tVxT5wZc1Gwg8J+P0LWvzlBzxYRnHJ+1i7Q==}
+  undici@7.24.6:
+    resolution: {integrity: sha512-Xi4agocCbRzt0yYMZGMA6ApD7gvtUFaxm4ZmeacWI4cZxaF6C+8I8QfofC20NAePiB/IcvZmzkJ7XPa471AEtA==}
     engines: {node: '>=20.18.1'}
 
   universal-user-agent@6.0.1:
@@ -2956,7 +2956,7 @@ snapshots:
       '@octokit/plugin-rest-endpoint-methods': 10.4.1(@octokit/core@5.2.1)
       '@octokit/request': 8.4.1
       '@octokit/request-error': 5.1.1
-      undici: 7.24.5
+      undici: 7.24.6
 
   '@actions/github@7.0.0':
     dependencies:
@@ -2966,7 +2966,7 @@ snapshots:
       '@octokit/plugin-rest-endpoint-methods': 10.4.1(@octokit/core@5.2.1)
       '@octokit/request': 8.4.1
       '@octokit/request-error': 5.1.1
-      undici: 7.24.5
+      undici: 7.24.6
 
   '@actions/glob@0.5.0':
     dependencies:
@@ -2976,17 +2976,17 @@ snapshots:
   '@actions/http-client@2.2.3':
     dependencies:
       tunnel: 0.0.6
-      undici: 7.24.5
+      undici: 7.24.6
 
   '@actions/http-client@3.0.1':
     dependencies:
       tunnel: 0.0.6
-      undici: 7.24.5
+      undici: 7.24.6
 
   '@actions/http-client@4.0.0':
     dependencies:
       tunnel: 0.0.6
-      undici: 7.24.5
+      undici: 7.24.6
 
   '@actions/io@1.1.3': {}
 
@@ -5964,7 +5964,7 @@ snapshots:
 
   undici-types@7.18.2: {}
 
-  undici@7.24.5: {}
+  undici@7.24.6: {}
 
   universal-user-agent@6.0.1: {}
 
