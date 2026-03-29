@@ -37777,6 +37777,53 @@ function normalizeError(err) {
     return err;
 }
 
+function getSchemaBasePath(basePath, value) {
+    const schemaId = getSchemaId(value);
+    return schemaId ? resolve(basePath, schemaId) : basePath;
+}
+function usesDynamicIdScope(value) {
+    if (!value || typeof value !== "object" || ArrayBuffer.isView(value)) {
+        return false;
+    }
+    const schema = value.$schema;
+    if (typeof schema === "string" &&
+        (schema.includes("draft/2019-09/") || schema.includes("draft/2020-12/") || schema.includes("oas/3.1/"))) {
+        return true;
+    }
+    const openapi = value.openapi;
+    return typeof openapi === "string" && /^3\.1(?:\.|$)/.test(openapi);
+}
+function registerSchemaResources($refs, basePath, value, pathType, dynamicIdScope = false) {
+    if (!dynamicIdScope) {
+        return;
+    }
+    const seen = new Set();
+    const visit = (node, scopeBase) => {
+        if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
+            return;
+        }
+        seen.add(node);
+        const nextScopeBase = getSchemaBasePath(scopeBase, node);
+        if (nextScopeBase !== scopeBase) {
+            $refs._addAlias(nextScopeBase, node, pathType, dynamicIdScope);
+        }
+        for (const key of Object.keys(node)) {
+            visit(node[key], nextScopeBase);
+        }
+    };
+    visit(value, basePath);
+}
+function getSchemaId(value) {
+    if (value &&
+        typeof value === "object" &&
+        "$id" in value &&
+        typeof value.$id === "string" &&
+        value.$id.length > 0) {
+        return value.$id;
+    }
+    return undefined;
+}
+
 const nullSymbol = Symbol("null");
 const slashes = /\//g;
 const tildes = /~/g;
@@ -37805,6 +37852,10 @@ class Pointer {
      */
     originalPath;
     /**
+     * The current base URI used to resolve nested $ref pointers while walking this pointer.
+     */
+    scopeBase;
+    /**
      * The value of the JSON pointer.
      * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).
      */
@@ -37822,6 +37873,7 @@ class Pointer {
         this.$ref = $ref;
         this.path = path;
         this.originalPath = friendlyPath || path;
+        this.scopeBase = $ref.path || stripHash(path);
         this.value = undefined;
         this.circular = false;
         this.indirections = 0;
@@ -37844,6 +37896,9 @@ class Pointer {
         const found = [];
         // Crawl the object, one token at a time
         this.value = unwrapOrThrow(obj);
+        if (this.$ref.dynamicIdScope) {
+            this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+        }
         for (let i = 0; i < tokens.length; i++) {
             // During token walking, if the current value is an extended $ref (has sibling keys
             // alongside $ref, as allowed by JSON Schema 2019-09+), and resolveIf$Ref marks it
@@ -37899,9 +37954,13 @@ class Pointer {
                 this.value = this.value[token];
             }
             found.push(token);
+            if (this.$ref.dynamicIdScope) {
+                this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+            }
         }
         // Resolve the final value
-        if (!this.value || (this.value.$ref && resolve(this.path, this.value.$ref) !== pathFromRoot)) {
+        const finalResolutionBase = this.$ref.dynamicIdScope ? this.scopeBase : this.path;
+        if (!this.value || (this.value.$ref && resolve(finalResolutionBase, this.value.$ref) !== pathFromRoot)) {
             resolveIf$Ref(this, options, pathFromRoot);
         }
         return this;
@@ -37926,6 +37985,9 @@ class Pointer {
         }
         // Crawl the object, one token at a time
         this.value = unwrapOrThrow(obj);
+        if (this.$ref.dynamicIdScope) {
+            this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+        }
         for (let i = 0; i < tokens.length - 1; i++) {
             resolveIf$Ref(this, options);
             token = tokens[i];
@@ -37936,6 +37998,9 @@ class Pointer {
             else {
                 // The token doesn't exist, so create it
                 this.value = setValue(this, token, {});
+            }
+            if (this.$ref.dynamicIdScope) {
+                this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
             }
         }
         // Set the value of the final token
@@ -38014,7 +38079,8 @@ class Pointer {
 function resolveIf$Ref(pointer, options, pathFromRoot) {
     // Is the value a JSON reference? (and allowed?)
     if ($Ref.isAllowed$Ref(pointer.value, options)) {
-        const $refPath = resolve(pointer.path, pointer.value.$ref);
+        const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
+        const $refPath = resolve(resolutionBase, pointer.value.$ref);
         if ($refPath === pointer.path && !isRootPath(pathFromRoot)) {
             // The value is a reference to itself, so there's nothing to do.
             pointer.circular = true;
@@ -38029,6 +38095,9 @@ function resolveIf$Ref(pointer, options, pathFromRoot) {
                 // This JSON reference "extends" the resolved value, rather than simply pointing to it.
                 // So the resolved path does NOT change.  Just the value does.
                 pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
+                if (pointer.$ref.dynamicIdScope) {
+                    pointer.scopeBase = getSchemaBasePath(pointer.scopeBase, pointer.value);
+                }
                 return false;
             }
             else {
@@ -38036,6 +38105,9 @@ function resolveIf$Ref(pointer, options, pathFromRoot) {
                 pointer.$ref = resolved.$ref;
                 pointer.path = resolved.path;
                 pointer.value = resolved.value;
+                pointer.scopeBase = pointer.$ref.dynamicIdScope
+                    ? getSchemaBasePath(pointer.$ref.path, pointer.value)
+                    : pointer.$ref.path;
             }
             return true;
         }
@@ -38111,6 +38183,10 @@ class $Ref {
      * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
      */
     pathType;
+    /**
+     * Whether this document/resource should use JSON Schema 2019-09+ nested $id scope semantics.
+     */
+    dynamicIdScope = false;
     /**
      * List of all errors. Undefined if no errors.
      */
@@ -38473,10 +38549,9 @@ class $Refs {
      */
     set(path, value) {
         const absPath = resolve(this._root$Ref.path, path);
-        const withoutHash = stripHash(absPath);
-        const $ref = this._$refs[withoutHash];
+        const $ref = this._getRef(absPath);
         if (!$ref) {
-            throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+            throw new Error(`Error resolving $ref pointer "${path}". \n"${stripHash(absPath)}" not found.`);
         }
         $ref.set(absPath, value);
     }
@@ -38489,8 +38564,7 @@ class $Refs {
      */
     _get$Ref(path) {
         path = resolve(this._root$Ref.path, path);
-        const withoutHash = stripHash(path);
-        return this._$refs[withoutHash];
+        return this._getRef(path);
     }
     /**
      * Creates a new {@link $Ref} object and adds it to this {@link $Refs} object.
@@ -38505,6 +38579,19 @@ class $Refs {
         this._root$Ref = this._root$Ref || $ref;
         return $ref;
     }
+    _addAlias(path, value, pathType, dynamicIdScope = false) {
+        const withoutHash = stripHash(path);
+        if (!withoutHash || this._$refs[withoutHash] || this._aliases[withoutHash]) {
+            return this._$refs[withoutHash] || this._aliases[withoutHash];
+        }
+        const $ref = new $Ref(this);
+        $ref.path = withoutHash;
+        $ref.pathType = pathType;
+        $ref.value = value;
+        $ref.dynamicIdScope = dynamicIdScope;
+        this._aliases[withoutHash] = $ref;
+        return $ref;
+    }
     /**
      * Resolves the given JSON reference.
      *
@@ -38516,10 +38603,9 @@ class $Refs {
      */
     _resolve(path, pathFromRoot, options) {
         const absPath = resolve(this._root$Ref.path, path);
-        const withoutHash = stripHash(absPath);
-        const $ref = this._$refs[withoutHash];
+        const $ref = this._getRef(absPath);
         if (!$ref) {
-            throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+            throw new Error(`Error resolving $ref pointer "${path}". \n"${stripHash(absPath)}" not found.`);
         }
         return $ref.resolve(absPath, options, path, pathFromRoot);
     }
@@ -38530,6 +38616,7 @@ class $Refs {
      * @protected
      */
     _$refs = {};
+    _aliases = {};
     /**
      * The {@link $Ref} object that is the root of the JSON schema.
      *
@@ -38545,6 +38632,7 @@ class $Refs {
          */
         this.circular = false;
         this._$refs = {};
+        this._aliases = {};
         // @ts-ignore
         this._root$Ref = null;
     }
@@ -38567,6 +38655,10 @@ class $Refs {
      * @returns {object}
      */
     toJSON = this.values;
+    _getRef(path) {
+        const withoutHash = stripHash(path);
+        return this._$refs[withoutHash] || this._aliases[withoutHash];
+    }
 }
 /**
  * Returns the encoded and decoded paths keys of the given object.
@@ -38723,7 +38815,10 @@ function getResult(obj, prop, file, callback, $refs) {
 /**
  * Reads and parses the specified file path or URL.
  */
-async function parse(path, $refs, options) {
+async function parse(target, $refs, options) {
+    let path = typeof target === "string" ? target : target.url;
+    const baseUrl = typeof target === "string" ? undefined : target.baseUrl;
+    let reference = typeof target === "string" ? undefined : target.reference;
     // Remove the URL fragment, if any
     const hashIndex = path.indexOf("#");
     let hash = "";
@@ -38731,6 +38826,12 @@ async function parse(path, $refs, options) {
         hash = path.substring(hashIndex);
         // Remove the URL fragment, if any
         path = path.substring(0, hashIndex);
+    }
+    if (reference) {
+        const referenceHashIndex = reference.indexOf("#");
+        if (referenceHashIndex >= 0) {
+            reference = reference.substring(0, referenceHashIndex);
+        }
     }
     // Add a new $Ref for this file, even though we don't have the value yet.
     // This ensures that we don't simultaneously read & parse the same file multiple times
@@ -38740,6 +38841,8 @@ async function parse(path, $refs, options) {
         url: path,
         hash,
         extension: getExtension(path),
+        ...(reference !== undefined ? { reference } : {}),
+        ...(baseUrl !== undefined ? { baseUrl } : {}),
     };
     // Read the file and then parse the data
     try {
@@ -38748,6 +38851,8 @@ async function parse(path, $refs, options) {
         file.data = resolver.result;
         const parser = await parseFile(file, options, $refs);
         $ref.value = parser.result;
+        $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+        registerSchemaResources($refs, $ref.path, $ref.value, $ref.pathType, $ref.dynamicIdScope);
         return parser.result;
     }
     catch (err) {
@@ -43254,7 +43359,7 @@ function resolveExternal(parser, options) {
     }
     try {
         // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
-        const promises = crawl$2(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs, options);
+        const promises = crawl$2(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, parser.$refs, options);
         return Promise.all(promises);
     }
     catch (e) {
@@ -43277,19 +43382,21 @@ function resolveExternal(parser, options) {
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl$2(obj, path, $refs, options, seen, external) {
+function crawl$2(obj, path, scopeBase, dynamicIdScope, $refs, options, seen, external) {
     seen ||= new Set();
     let promises = [];
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
         seen.add(obj); // Track previously seen objects to avoid infinite recursion
+        const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
         if ($Ref.isExternal$Ref(obj)) {
-            promises.push(resolve$Ref(obj, path, $refs, options));
+            promises.push(resolve$Ref(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
         }
         const keys = Object.keys(obj);
         for (const key of keys) {
             const keyPath = Pointer.join(path, key);
             const value = obj[key];
-            promises = promises.concat(crawl$2(value, keyPath, $refs, options, seen));
+            const childScopeBase = dynamicIdScope && $Ref.isExternal$Ref(value) ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+            promises = promises.concat(crawl$2(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, seen));
         }
     }
     return promises;
@@ -43306,23 +43413,33 @@ function crawl$2(obj, path, $refs, options, seen, external) {
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-async function resolve$Ref($ref, path, $refs, options) {
+async function resolve$Ref($ref, path, scopeBase, dynamicIdScope, $refs, options) {
     const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
-    const resolvedPath = resolve(shouldResolveOnCwd ? cwd() : path, $ref.$ref);
+    const resolutionBase = shouldResolveOnCwd ? cwd() : dynamicIdScope ? scopeBase : path;
+    const resolvedPath = resolve(resolutionBase, $ref.$ref);
     const withoutHash = stripHash(resolvedPath);
     // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
     // Do we already have this $ref?
-    const ref = $refs._$refs[withoutHash];
+    const ref = $refs._get$Ref(withoutHash);
     if (ref) {
         // We've already parsed this $ref, so use the existing value
         return Promise.resolve(ref.value);
     }
     // Parse the $referenced file/url
     try {
-        const result = await parse(resolvedPath, $refs, options);
+        const reference = $ref.$ref;
+        const parseTarget = {
+            url: resolvedPath,
+            baseUrl: resolutionBase,
+        };
+        if (typeof reference === "string") {
+            parseTarget.reference = reference;
+        }
+        const result = await parse(parseTarget, $refs, options);
         // Crawl the parsed value
         // console.log('Resolving $ref pointers in %s', withoutHash);
-        const promises = crawl$2(result, withoutHash + "#", $refs, options, new Set(), true);
+        const parsedRef = $refs._get$Ref(withoutHash);
+        const promises = crawl$2(result, withoutHash + "#", withoutHash, parsedRef?.dynamicIdScope ?? false, $refs, options, new Set(), true);
         return Promise.all(promises);
     }
     catch (err) {
@@ -43349,7 +43466,7 @@ function bundle(parser, options) {
     // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
     // Build an inventory of all $ref pointers in the JSON Schema
     const inventory = [];
-    crawl$1(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
+    crawl$1(parser, "schema", parser.$refs._root$Ref.path + "#", parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, "#", 0, inventory, parser.$refs, options);
     // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
     const rootId = parser.schema && typeof parser.schema === "object" && "$id" in parser.schema
         ? parser.schema.$id
@@ -43374,13 +43491,14 @@ function bundle(parser, options) {
  * @param $refs
  * @param options
  */
-function crawl$1(parent, key, path, pathFromRoot, indirections, inventory, $refs, options) {
+function crawl$1(parent, key, path, scopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options) {
     const obj = key === null ? parent : parent[key];
     const bundleOptions = (options.bundle || {});
     const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
+        const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
         if ($Ref.isAllowed$Ref(obj)) {
-            inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
+            inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
         }
         else {
             // Crawl the object in a specific order that's optimized for bundling.
@@ -43406,10 +43524,11 @@ function crawl$1(parent, key, path, pathFromRoot, indirections, inventory, $refs
                 const keyPathFromRoot = Pointer.join(pathFromRoot, key);
                 const value = obj[key];
                 if ($Ref.isAllowed$Ref(value)) {
-                    inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
+                    const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+                    inventory$Ref(obj, key, keyPath, valueScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
                 }
                 else {
-                    crawl$1(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
+                    crawl$1(obj, key, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
                 }
                 // We need to ensure that we have an object to work with here because we may be crawling
                 // an `examples` schema and `value` may be nullish.
@@ -43435,9 +43554,9 @@ function crawl$1(parent, key, path, pathFromRoot, indirections, inventory, $refs
  * @param $refs
  * @param options
  */
-function inventory$Ref($refParent, $refKey, path, pathFromRoot, indirections, inventory, $refs, options) {
+function inventory$Ref($refParent, $refKey, path, scopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options) {
     const $ref = $refKey === null ? $refParent : $refParent[$refKey];
-    const $refPath = resolve(path, $ref.$ref);
+    const $refPath = resolve(dynamicIdScope ? scopeBase : path, $ref.$ref);
     const pointer = $refs._resolve($refPath, pathFromRoot, options);
     if (pointer === null) {
         return;
@@ -43446,7 +43565,7 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, indirections, in
     const depth = parsed.length;
     const file = stripHash(pointer.path);
     const hash = getHash(pointer.path);
-    const external = file !== $refs._root$Ref.path;
+    const external = file !== $refs._root$Ref.path && !$refs._aliases[file];
     const extended = $Ref.isExtended$Ref($ref);
     indirections += pointer.indirections;
     const existingEntry = findInInventory(inventory, $refParent, $refKey);
@@ -43475,7 +43594,7 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, indirections, in
     });
     // Recursively crawl the resolved value
     if (!existingEntry || external) {
-        crawl$1(pointer.value, null, pointer.path, pathFromRoot, indirections + 1, inventory, $refs, options);
+        crawl$1(pointer.value, null, pointer.path, pointer.$ref.path, pointer.$ref.dynamicIdScope, pathFromRoot, indirections + 1, inventory, $refs, options);
     }
 }
 /**
@@ -43732,7 +43851,7 @@ function isInsideIdScope(inventory, entry) {
 function dereference(parser, options) {
     const start = Date.now();
     // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, "#", new Set(), new Set(), new Map(), parser.$refs, options, start, 0);
+    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, "#", new Set(), new Set(), new Map(), parser.$refs, options, start, 0);
     parser.$refs.circular = dereferenced.circular;
     parser.schema = dereferenced.value;
 }
@@ -43751,7 +43870,7 @@ function dereference(parser, options) {
  * @param depth - The current recursion depth
  * @returns
  */
-function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
+function crawl(obj, path, scopeBase, dynamicIdScope, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
     let dereferenced;
     const result = {
         value: obj,
@@ -43770,8 +43889,9 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
         if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
             parents.add(obj);
             processedObjects.add(obj);
+            const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
             if ($Ref.isAllowed$Ref(obj, options)) {
-                dereferenced = dereference$Ref(obj, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
+                dereferenced = dereference$Ref(obj, path, currentScopeBase, dynamicIdScope, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                 result.circular = dereferenced.circular;
                 result.value = dereferenced.value;
             }
@@ -43786,7 +43906,8 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
                     const value = obj[key];
                     let circular;
                     if ($Ref.isAllowed$Ref(value, options)) {
-                        dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
+                        const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+                        dereferenced = dereference$Ref(value, keyPath, valueScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                         circular = dereferenced.circular;
                         // Avoid pointless mutations; breaks frozen objects to no profit
                         if (obj[key] !== dereferenced.value) {
@@ -43823,7 +43944,7 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
                     }
                     else {
                         if (!parents.has(value)) {
-                            dereferenced = crawl(value, keyPath, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
+                            dereferenced = crawl(value, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
                             circular = dereferenced.circular;
                             // Avoid pointless mutations; breaks frozen objects to no profit
                             if (obj[key] !== dereferenced.value) {
@@ -43856,10 +43977,11 @@ function crawl(obj, path, pathFromRoot, parents, processedObjects, dereferencedC
  * @param options
  * @returns
  */
-function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
+function dereference$Ref($ref, path, scopeBase, dynamicIdScope, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth) {
     const isExternalRef = $Ref.isExternal$Ref($ref);
     const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
-    const $refPath = resolve(shouldResolveOnCwd ? cwd() : path, $ref.$ref);
+    const resolutionBase = shouldResolveOnCwd ? cwd() : dynamicIdScope ? scopeBase : path;
+    const $refPath = resolve(resolutionBase, $ref.$ref);
     const cache = dereferencedCache.get($refPath);
     if (cache) {
         // If the object we found is circular we can immediately return it because it would have been
@@ -43926,7 +44048,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, de
     // Crawl the dereferenced value (unless it's circular)
     if (!circular) {
         // Determine if the dereferenced value is circular
-        const dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
+        const dereferenced = crawl(dereferencedValue, pointer.path, pointer.$ref.path, pointer.$ref.dynamicIdScope, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
         circular = dereferenced.circular;
         dereferencedValue = dereferenced.value;
     }
@@ -44072,6 +44194,8 @@ class $RefParser {
             const $ref = this.$refs._add(args.path);
             $ref.value = args.schema;
             $ref.pathType = pathType;
+            $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+            registerSchemaResources(this.$refs, $ref.path, $ref.value, $ref.pathType, $ref.dynamicIdScope);
             promise = Promise.resolve(args.schema);
         }
         else {
