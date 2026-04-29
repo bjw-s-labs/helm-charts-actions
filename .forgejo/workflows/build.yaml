@@ -1,0 +1,67 @@
+---
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          token: ${{ secrets.FORGEJO_TOKEN }}
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Remove dist/ Directory
+        id: remove-dist
+        run: npx rimraf ./dist
+
+      - name: Install Dependencies
+        id: install
+        env:
+          CI: true
+        run: |
+          pnpm install --frozen-lockfile
+
+      - name: Build dist/ Directory
+        id: build
+        run: pnpm run bundle
+
+      - name: Push changes
+        if: github.event_name == 'push'
+        env:
+          CI_COMMIT_AUTHOR: lab-assistant
+          CI_COMMIT_MESSAGE: 'build: update dist'
+          CI_COMMIT_EMAIL: lab-assistant@git.bjw-s.dev
+        run: |-
+          if [ -z "$(git status --porcelain dist/)" ]; then
+            echo "No changes to dist/"
+            exit 0
+          fi
+
+          git config --local user.email "${{ env.CI_COMMIT_EMAIL }}"
+          git config --local user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git add dist/
+          git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push

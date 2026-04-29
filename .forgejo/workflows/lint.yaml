@@ -1,0 +1,107 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Lint
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ forgejo.ref }}-${{ forgejo.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Get changed files
+        id: changed-files
+        uses: https://github.com/bjw-s-labs/action-changed-files@a9a36fb08ce06db9b02fbd8026cc2c0945eb9841 # v0.6.0
+        with:
+          patterns: |-
+            .forgejo/workflows/*.yaml
+            .forgejo/workflows/*.yml
+
+      - name: Run actionlint
+        if: steps.changed-files.outputs.changed_files != '[]'
+        uses: https://github.com/bjw-s-labs/action-actionlint@b346813e82708106544f48a93a5b3fbeeb8e37eb # v0.1.1
+        with:
+          actionlint_config: .forgejo/actionlint.yaml
+          file_pattern: |-
+            ${{ join(fromJSON(steps.changed-files.outputs.changed_files), ' ') }}
+
+  eslint:
+    name: eslint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install Dependencies
+        id: npm-ci
+        run: |
+          pnpm run ci
+
+      - name: Run ESLint
+        id: npm-lint
+        run: pnpm run lint
+
+  prettier:
+    name: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install Dependencies
+        id: npm-ci
+        run: |
+          pnpm run ci
+
+      - name: Run prettier
+        id: npm-format-check
+        run: pnpm run format:check
