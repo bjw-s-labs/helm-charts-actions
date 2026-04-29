@@ -5,6 +5,10 @@ on:
   pull_request:
     branches:
       - main
+    types:
+      - opened
+      - reopened
+      - synchronize
   push:
     branches:
       - main
@@ -52,7 +56,6 @@ jobs:
         run: pnpm run bundle
 
       - name: Push changes
-        if: github.event_name == 'push'
         env:
           CI_COMMIT_AUTHOR: lab-assistant
           CI_COMMIT_MESSAGE: 'build: update dist'
