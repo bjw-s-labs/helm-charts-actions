@@ -37774,7 +37774,7 @@ const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
 const jsonPointerSlash = /~1/g;
 const jsonPointerTilde = /~0/g;
-const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
+const isAbsoluteWin32Path = /^[a-zA-Z]:[\\/]/;
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
     [/\?/g, "%3F"],
@@ -38151,6 +38151,9 @@ function fromFileSystemPath(path) {
  * Converts a URL to a local filesystem path.
  */
 function toFileSystemPath(path, keepFileProtocol) {
+    // Bare "%" characters are valid in filesystem paths, but they make `decodeURI` throw.
+    // Escape only the non-encoded ones so percent-encoded sequences still decode normally.
+    path = path.replace(/%(?![0-9A-Fa-f]{2})/g, "%25");
     // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
     path = decodeURI(path);
     // Step 2: Manually decode characters that are not decoded by `decodeURI`.
@@ -38483,7 +38486,7 @@ class Pointer {
         const found = [];
         // Crawl the object, one token at a time
         this.value = unwrapOrThrow(obj);
-        if (this.$ref.dynamicIdScope) {
+        if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
             this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
         }
         for (let i = 0; i < tokens.length; i++) {
@@ -38572,7 +38575,7 @@ class Pointer {
         }
         // Crawl the object, one token at a time
         this.value = unwrapOrThrow(obj);
-        if (this.$ref.dynamicIdScope) {
+        if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
             this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
         }
         for (let i = 0; i < tokens.length - 1; i++) {
@@ -38682,9 +38685,6 @@ function resolveIf$Ref(pointer, options, pathFromRoot) {
                 // This JSON reference "extends" the resolved value, rather than simply pointing to it.
                 // So the resolved path does NOT change.  Just the value does.
                 pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
-                if (pointer.$ref.dynamicIdScope) {
-                    pointer.scopeBase = getSchemaBasePath(pointer.scopeBase, pointer.value);
-                }
                 return false;
             }
             else {
@@ -38692,9 +38692,10 @@ function resolveIf$Ref(pointer, options, pathFromRoot) {
                 pointer.$ref = resolved.$ref;
                 pointer.path = resolved.path;
                 pointer.value = resolved.value;
-                pointer.scopeBase = pointer.$ref.dynamicIdScope
-                    ? getSchemaBasePath(pointer.$ref.path, pointer.value)
-                    : pointer.$ref.path;
+                // `pointer.$ref.path` is already the canonical location of the resolved resource.
+                // Re-applying the resource's own `$id` here would duplicate nested path segments
+                // such as `nested/nested/foo.json`.
+                pointer.scopeBase = pointer.$ref.path;
             }
             return true;
         }
@@ -38734,6 +38735,9 @@ function unwrapOrThrow(value) {
 }
 function isRootPath(pathFromRoot) {
     return typeof pathFromRoot == "string" && Pointer.parse(pathFromRoot).length == 0;
+}
+function isAliasedResource($ref) {
+    return Boolean($ref.path && $ref.path in $ref.$refs._aliases);
 }
 
 /**
@@ -43945,8 +43949,11 @@ function resolveExternal(parser, options) {
         return Promise.resolve();
     }
     try {
+        const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+            ? getSchemaBasePath(parser.$refs._root$Ref.path, parser.schema)
+            : parser.$refs._root$Ref.path;
         // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
-        const promises = crawl$2(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, parser.$refs, options);
+        const promises = crawl$2(parser.schema, parser.$refs._root$Ref.path + "#", rootScopeBase, parser.$refs._root$Ref.dynamicIdScope, parser.$refs, options);
         return Promise.all(promises);
     }
     catch (e) {
@@ -43974,7 +43981,7 @@ function crawl$2(obj, path, scopeBase, dynamicIdScope, $refs, options, seen, ext
     let promises = [];
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
         seen.add(obj); // Track previously seen objects to avoid infinite recursion
-        const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+        const currentScopeBase = scopeBase;
         if ($Ref.isExternal$Ref(obj)) {
             promises.push(resolve$Ref(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
         }
@@ -43982,7 +43989,9 @@ function crawl$2(obj, path, scopeBase, dynamicIdScope, $refs, options, seen, ext
         for (const key of keys) {
             const keyPath = Pointer.join(path, key);
             const value = obj[key];
-            const childScopeBase = dynamicIdScope && $Ref.isExternal$Ref(value) ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+            const childScopeBase = dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+                ? getSchemaBasePath(currentScopeBase, value)
+                : currentScopeBase;
             promises = promises.concat(crawl$2(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, seen));
         }
     }
@@ -44051,9 +44060,12 @@ async function resolve$Ref($ref, path, scopeBase, dynamicIdScope, $refs, options
  */
 function bundle(parser, options) {
     // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
+    const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+        ? getSchemaBasePath(parser.$refs._root$Ref.path, parser.schema)
+        : parser.$refs._root$Ref.path;
     // Build an inventory of all $ref pointers in the JSON Schema
     const inventory = [];
-    crawl$1(parser, "schema", parser.$refs._root$Ref.path + "#", parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, "#", 0, inventory, parser.$refs, options);
+    crawl$1(parser, "schema", parser.$refs._root$Ref.path + "#", rootScopeBase, parser.$refs._root$Ref.dynamicIdScope, "#", 0, inventory, parser.$refs, options);
     // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
     const rootId = parser.schema && typeof parser.schema === "object" && "$id" in parser.schema
         ? parser.schema.$id
@@ -44083,7 +44095,7 @@ function crawl$1(parent, key, path, scopeBase, dynamicIdScope, pathFromRoot, ind
     const bundleOptions = (options.bundle || {});
     const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
-        const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+        const currentScopeBase = scopeBase;
         if ($Ref.isAllowed$Ref(obj)) {
             inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
         }
@@ -44110,12 +44122,14 @@ function crawl$1(parent, key, path, scopeBase, dynamicIdScope, pathFromRoot, ind
                 const keyPath = Pointer.join(path, key);
                 const keyPathFromRoot = Pointer.join(pathFromRoot, key);
                 const value = obj[key];
+                const childScopeBase = dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+                    ? getSchemaBasePath(currentScopeBase, value)
+                    : currentScopeBase;
                 if ($Ref.isAllowed$Ref(value)) {
-                    const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
-                    inventory$Ref(obj, key, keyPath, valueScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
+                    inventory$Ref(obj, key, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
                 }
                 else {
-                    crawl$1(obj, key, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
+                    crawl$1(obj, key, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
                 }
                 // We need to ensure that we have an object to work with here because we may be crawling
                 // an `examples` schema and `value` may be nullish.
@@ -44437,8 +44451,11 @@ function isInsideIdScope(inventory, entry) {
  */
 function dereference(parser, options) {
     const start = Date.now();
+    const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+        ? getSchemaBasePath(parser.$refs._root$Ref.path, parser.schema)
+        : parser.$refs._root$Ref.path;
     // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, parser.$refs._root$Ref.path, parser.$refs._root$Ref.dynamicIdScope, "#", new Set(), new Set(), new Map(), parser.$refs, options, start, 0);
+    const dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, rootScopeBase, parser.$refs._root$Ref.dynamicIdScope, "#", new Set(), new Set(), new Map(), parser.$refs, options, start, 0);
     parser.$refs.circular = dereferenced.circular;
     parser.schema = dereferenced.value;
 }
@@ -44476,7 +44493,7 @@ function crawl(obj, path, scopeBase, dynamicIdScope, pathFromRoot, parents, proc
         if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
             parents.add(obj);
             processedObjects.add(obj);
-            const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+            const currentScopeBase = scopeBase;
             if ($Ref.isAllowed$Ref(obj, options)) {
                 dereferenced = dereference$Ref(obj, path, currentScopeBase, dynamicIdScope, pathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                 result.circular = dereferenced.circular;
@@ -44491,10 +44508,12 @@ function crawl(obj, path, scopeBase, dynamicIdScope, pathFromRoot, parents, proc
                         continue;
                     }
                     const value = obj[key];
+                    const childScopeBase = dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+                        ? getSchemaBasePath(currentScopeBase, value)
+                        : currentScopeBase;
                     let circular;
                     if ($Ref.isAllowed$Ref(value, options)) {
-                        const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
-                        dereferenced = dereference$Ref(value, keyPath, valueScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
+                        dereferenced = dereference$Ref(value, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth);
                         circular = dereferenced.circular;
                         // Avoid pointless mutations; breaks frozen objects to no profit
                         if (obj[key] !== dereferenced.value) {
@@ -44531,7 +44550,7 @@ function crawl(obj, path, scopeBase, dynamicIdScope, pathFromRoot, parents, proc
                     }
                     else {
                         if (!parents.has(value)) {
-                            dereferenced = crawl(value, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
+                            dereferenced = crawl(value, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, parents, processedObjects, dereferencedCache, $refs, options, startTime, depth + 1);
                             circular = dereferenced.circular;
                             // Avoid pointless mutations; breaks frozen objects to no profit
                             if (obj[key] !== dereferenced.value) {
