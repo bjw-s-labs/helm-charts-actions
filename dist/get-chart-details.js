@@ -46263,7 +46263,7 @@ class Doc {
 const version = {
     major: 4,
     minor: 4,
-    patch: 2,
+    patch: 3,
 };
 
 const $ZodType = /*@__PURE__*/ $constructor("$ZodType", (inst, def) => {
@@ -47261,6 +47261,7 @@ const $ZodEnum = /*@__PURE__*/ $constructor("$ZodEnum", (inst, def) => {
 });
 const $ZodTransform = /*@__PURE__*/ $constructor("$ZodTransform", (inst, def) => {
     $ZodType.init(inst, def);
+    inst._zod.optin = "optional";
     inst._zod.parse = (payload, ctx) => {
         if (ctx.direction === "backward") {
             throw new $ZodEncodeError(inst.constructor.name);
@@ -47270,6 +47271,7 @@ const $ZodTransform = /*@__PURE__*/ $constructor("$ZodTransform", (inst, def) =>
             const output = _out instanceof Promise ? _out : Promise.resolve(_out);
             return output.then((output) => {
                 payload.value = output;
+                payload.fallback = true;
                 return payload;
             });
         }
@@ -47277,11 +47279,12 @@ const $ZodTransform = /*@__PURE__*/ $constructor("$ZodTransform", (inst, def) =>
             throw new $ZodAsyncError();
         }
         payload.value = _out;
+        payload.fallback = true;
         return payload;
     };
 });
 function handleOptionalResult(result, input) {
-    if (result.issues.length && input === undefined) {
+    if (input === undefined && (result.issues.length || result.fallback)) {
         return { issues: [], value: undefined };
     }
     return result;
@@ -47299,10 +47302,11 @@ const $ZodOptional = /*@__PURE__*/ $constructor("$ZodOptional", (inst, def) => {
     });
     inst._zod.parse = (payload, ctx) => {
         if (def.innerType._zod.optin === "optional") {
+            const input = payload.value;
             const result = def.innerType._zod.run(payload, ctx);
             if (result instanceof Promise)
-                return result.then((r) => handleOptionalResult(r, payload.value));
-            return handleOptionalResult(result, payload.value);
+                return result.then((r) => handleOptionalResult(r, input));
+            return handleOptionalResult(result, input);
         }
         if (payload.value === undefined) {
             return payload;
@@ -47412,7 +47416,7 @@ function handleNonOptionalResult(payload, inst) {
 }
 const $ZodCatch = /*@__PURE__*/ $constructor("$ZodCatch", (inst, def) => {
     $ZodType.init(inst, def);
-    defineLazy(inst._zod, "optin", () => def.innerType._zod.optin);
+    inst._zod.optin = "optional";
     defineLazy(inst._zod, "optout", () => def.innerType._zod.optout);
     defineLazy(inst._zod, "values", () => def.innerType._zod.values);
     inst._zod.parse = (payload, ctx) => {
@@ -47433,6 +47437,7 @@ const $ZodCatch = /*@__PURE__*/ $constructor("$ZodCatch", (inst, def) => {
                         input: payload.value,
                     });
                     payload.issues = [];
+                    payload.fallback = true;
                 }
                 return payload;
             });
@@ -47447,6 +47452,7 @@ const $ZodCatch = /*@__PURE__*/ $constructor("$ZodCatch", (inst, def) => {
                 input: payload.value,
             });
             payload.issues = [];
+            payload.fallback = true;
         }
         return payload;
     };
@@ -47478,7 +47484,7 @@ function handlePipeResult(left, next, ctx) {
         left.aborted = true;
         return left;
     }
-    return next._zod.run({ value: left.value, issues: left.issues }, ctx);
+    return next._zod.run({ value: left.value, issues: left.issues, fallback: left.fallback }, ctx);
 }
 const $ZodReadonly = /*@__PURE__*/ $constructor("$ZodReadonly", (inst, def) => {
     $ZodType.init(inst, def);
@@ -49384,10 +49390,12 @@ const ZodTransform = /*@__PURE__*/ $constructor("ZodTransform", (inst, def) => {
         if (output instanceof Promise) {
             return output.then((output) => {
                 payload.value = output;
+                payload.fallback = true;
                 return payload;
             });
         }
         payload.value = output;
+        payload.fallback = true;
         return payload;
     };
 });
