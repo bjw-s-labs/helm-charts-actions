@@ -25,8 +25,8 @@ jobs:
         id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          persist-credentials: false
-          token: ${{ secrets.FORGEJO_TOKEN }}
+          token: ${{ secrets.LAB_ASSISTANT_TOKEN }}
+          ref: ${{ github.head_ref }}
 
       - uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
         name: Install pnpm
