@@ -3,7 +3,7 @@
   "description": "GitHub actions to use with helm-charts repo",
   "version": "1.0.0",
   "author": "bjw-s",
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.9.0",
   "type": "module",
   "private": true,
   "repository": {
