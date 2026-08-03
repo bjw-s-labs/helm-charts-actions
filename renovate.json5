@@ -1,5 +1,7 @@
 {
-  extends: ['github>bjw-s/renovate-config'],
+  extends: [
+    "local>bjw-s/renovate-config"
+  ],
   packageRules: [
     {
       "matchDatasources": [
