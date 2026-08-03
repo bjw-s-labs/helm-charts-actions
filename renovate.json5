@@ -2,6 +2,12 @@
   extends: ['github>bjw-s/renovate-config'],
   packageRules: [
     {
+      "matchDatasources": [
+        "npm"
+      ],
+      "minimumReleaseAge": "3 days"
+    },
+    {
       description: 'Group devDependencies',
       groupName: 'devDependencies',
       matchDatasources: ['npm'],
